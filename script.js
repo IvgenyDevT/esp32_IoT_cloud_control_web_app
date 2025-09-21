@@ -58,8 +58,11 @@ function toggleLed() {
   status.style.color = ledOn ? "green" : "red";
   status.style.fontWeight = "bold";
 
-  // אם יש חיבור ל-MQTT → נשלח הודעה ל-ESP32
   if (client && client.connected) {
-    client.publish("Jeka", ledOn ? "ON" : "OFF");
+    const message = ledOn ? "red led on" : "red led off";
+    client.publish("Jeka", message);
+    console.log("Published:", message);
+  } else {
+    console.warn("Not connected to MQTT broker");
   }
 }
