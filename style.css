@@ -1,0 +1,42 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin-top: 80px;
+}
+
+h1 {
+  color: rgb(45, 45, 212);
+}
+
+button {
+  background-color: green;
+  color: white;
+  padding: 10px 30px;
+  border:0lvw;
+  border-radius: 15px;
+  font-size: 14px;
+  cursor:pointer;
+}
+
+button:hover {
+  background-color: darkgreen;
+}
+
+button:active {
+  background-color: rgb(9, 62, 9);
+  color: rgb(245, 242, 242);
+  transform: scale(0.96);
+}
+button:disabled {
+  background-color: grey;
+  cursor: not-allowed;
+}
+
+p {
+  font-size: 18px;
+  color: rgb(34, 34, 34);
+  font-variant-position: super;
+}
+span {
+  font-weight: bold;
+}
