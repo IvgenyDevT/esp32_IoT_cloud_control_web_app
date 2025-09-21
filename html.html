@@ -3,10 +3,16 @@
   <head>
     <title>My First Website</title>
     <link rel="stylesheet" href="style.css">
+
+    <!-- קישור ל־manifest.json כדי לאפשר PWA -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- צבע ברירת מחדל ל־Status Bar באייפון -->
+    <meta name="theme-color" content="#000000">
   </head>
   <body>
     <h1>ESP32 Dashboard (Demo)</h1>
-    <p>Status: <span id="led-status"></span></p>
+    <p>Status: <span id="led-status">OFF</span></p>
     <button onclick="toggleLed()">Toggle LED</button>
 
     <script src="script.js"></script>
