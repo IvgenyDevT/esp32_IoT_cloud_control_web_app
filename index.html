@@ -9,12 +9,16 @@
 
     <!-- צבע ברירת מחדל ל־Status Bar באייפון -->
     <meta name="theme-color" content="#000000">
+
+    <!-- ספריית MQTT (נטענת ראשונה, כדי שזמינה ל-script.js) -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   </head>
   <body>
     <h1>ESP32 Dashboard (Demo)</h1>
     <p>Status: <span id="led-status">OFF</span></p>
     <button onclick="toggleLed()">Toggle LED</button>
 
+    <!-- הסקריפט שלך - צריך לבוא אחרי ה-HTML כדי שיעבוד עם האלמנטים -->
     <script src="script.js"></script>
   </body>
 </html>
