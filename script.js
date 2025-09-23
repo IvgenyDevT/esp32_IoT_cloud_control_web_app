@@ -86,7 +86,7 @@ function toggleLed() {
 // כפתור OTA
 function startOTA() {
   if (client && client.connected) {
-    client.publish("ota/update", OTA_URL);
+    client.publish("Jeka", OTA_URL);
     document.getElementById("ota-status").textContent =
       "OTA Status: Update triggered";
     console.log("OTA URL sent:", OTA_URL);
