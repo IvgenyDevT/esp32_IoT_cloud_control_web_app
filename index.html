@@ -178,7 +178,7 @@
           const match = msg.match(/(\\d+)%/);
           if (match) {
             const val = parseInt(match[1]);
-            document.getElementById("ota-progress").value = val;
+            document.getElementById("ota-progress"). nodeValue = val;
             document.getElementById("ota-percent").textContent = val + "%";
           }
         }
