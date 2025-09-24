@@ -1,61 +1,220 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    
-    <title>ESP32 Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>ESP32 Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    #status-indicator {
+      width: 15px; height: 15px; border-radius: 50%;
+      background-color: red; display: inline-block; margin-left: 10px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
 
-    <!-- קישור ל־manifest.json כדי לאפשר PWA -->
-    <link rel="manifest" href="manifest.json">
+  <!-- Top bar -->
+  <header class="flex items-center justify-between px-4 py-3 bg-white shadow-md">
+    <button id="menu-btn" class="text-gray-700">
+      <!-- ☰ icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+    <h1 class="text-xl font-bold">ESP32 Dashboard</h1>
+    <span></span>
+  </header>
 
-    <!-- צבע ברירת מחדל ל־Status Bar באייפון -->
-    <meta name="theme-color" content="#000000">
+  <!-- Sidebar -->
+  <aside id="sidebar"
+    class="fixed top-0 left-0 w-64 h-full bg-white shadow-lg transform -translate-x-full transition-transform duration-300 z-40">
+    <div class="p-6 font-bold text-2xl">ESP32</div>
+    <nav class="px-4 space-y-2">
+      <button onclick="showSection('home')"
+              class="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-200 text-gray-700 font-medium">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10"/>
+        </svg>
+        Home
+      </button>
 
-    <!-- ספריית MQTT -->
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+      <button onclick="showSection('leds')"
+              class="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-200 text-gray-700 font-medium">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4v16m8-8H4"/>
+        </svg>
+        LEDs
+      </button>
 
-    <style>
-      /* נורה לסטטוס MQTT */
-      #status-indicator {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background-color: red; /* ברירת מחדל: מנותק */
-        display: inline-block;
-        margin-left: 10px;
+      <button onclick="showSection('ota')"
+              class="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-200 text-gray-700 font-medium">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 19V6m-7 7h14"/>
+        </svg>
+        OTA
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Overlay -->
+  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-30"></div>
+
+  <!-- Main Content -->
+  <main class="p-6">
+    <!-- Home -->
+    <section id="home" class="section">
+      <h2 class="text-xl font-bold mb-4">Home</h2>
+      <button onclick="connectMQTT()" id="connect-btn"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow">
+        Connect MQTT
+      </button>
+      <span id="status-indicator"></span>
+    </section>
+
+    <!-- LEDs -->
+    <section id="leds" class="section hidden">
+      <h2 class="text-xl font-bold mb-4">LEDs Control</h2>
+      <div class="bg-white p-4 rounded-lg shadow space-y-4">
+        <!-- Blue LED -->
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium">Blue LED</span>
+          <div class="relative">
+            <input type="checkbox" id="Blue" class="sr-only peer">
+            <div class="w-14 h-8 bg-gray-300 rounded-full peer-checked:bg-blue-500 transition-colors"></div>
+            <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
+          </div>
+        </label>
+        <!-- Red LED -->
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium">Red LED</span>
+          <div class="relative">
+            <input type="checkbox" id="Red" class="sr-only peer">
+            <div class="w-14 h-8 bg-gray-300 rounded-full peer-checked:bg-red-500 transition-colors"></div>
+            <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <!-- OTA -->
+    <section id="ota" class="section hidden">
+      <h2 class="text-xl font-bold mb-4">OTA Update</h2>
+      <div class="bg-white p-4 rounded-lg shadow space-y-3">
+        <p id="ota-status" class="text-gray-700">OTA Status: Not started</p>
+        <button onclick="startOTA()" class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow">
+          Start OTA Update
+        </button>
+        <div class="flex items-center gap-3">
+          <progress id="ota-progress" max="100" value="0" class="w-full h-3"></progress>
+          <span id="ota-percent" class="text-sm w-12 text-right">0%</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- JavaScript -->
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    const menuBtn = document.getElementById("menu-btn");
+
+    menuBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("-translate-x-full");
+      overlay.classList.toggle("hidden");
+    });
+    overlay.addEventListener("click", () => {
+      sidebar.classList.add("-translate-x-full");
+      overlay.classList.add("hidden");
+    });
+
+    function showSection(id) {
+      document.querySelectorAll(".section").forEach(s => s.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+      sidebar.classList.add("-translate-x-full");
+      overlay.classList.add("hidden");
+    }
+    showSection("home");
+
+    /***************
+     * MQTT CONFIG *
+     ***************/
+    let client = null;
+    const broker = "wss://2a7e41fb3049421ba6af414adaf4f849.s1.eu.hivemq.cloud:8884/mqtt";
+    const options = {
+      username: "JekaDeGever",
+      password: "J1qwe321",
+      clean: true,
+      connectTimeout: 5000,
+      reconnectPeriod: 4000,
+    };
+
+    function connectMQTT() {
+      if (client && client.connected) return;
+      document.getElementById("status-indicator").style.backgroundColor = "yellow";
+      client = mqtt.connect(broker, options);
+
+      client.on("connect", () => {
+        document.getElementById("status-indicator").style.backgroundColor = "green";
+        document.getElementById("connect-btn").textContent = "Connected";
+        document.getElementById("connect-btn").disabled = true;
+        client.subscribe("Jeka");
+        client.subscribe("ota/progress");
+      });
+
+      client.on("error", () => {
+        document.getElementById("status-indicator").style.backgroundColor = "red";
+      });
+
+      client.on("message", (topic, message) => {
+        if (topic === "ota/progress") {
+          const msg = message.toString();
+          document.getElementById("ota-status").textContent = "OTA Status: " + msg;
+          const match = msg.match(/(\\d+)%/);
+          if (match) {
+            const val = parseInt(match[1]);
+            document.getElementById("ota-progress").value = val;
+            document.getElementById("ota-percent").textContent = val + "%";
+          }
+        }
+      });
+    }
+
+    // OTA Trigger
+    function startOTA() {
+      if (!client || !client.connected) {
+        document.getElementById("ota-status").textContent = "OTA Status: Not connected";
+        return;
       }
+      document.getElementById("ota-status").textContent = "OTA Status: Triggered";
+      document.getElementById("ota-progress").value = 0;
+      document.getElementById("ota-percent").textContent = "0%";
+      client.publish("ota/update", "https://ivgenydevt.github.io/esp32_dashboard_proj/firmware/firmware.bin");
+    }
 
-      button {
-        margin: 10px;
-        padding: 10px 20px;
-        border-radius: 10px;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-      }
-      button:hover {
-        opacity: 0.8;
-      }
-      button:active {
-        transform: scale(0.96);
-      }
-    </style>
-  </head>
-  <body>
-    <h1>ESP32 Dashboard (Demo) V2.0</h1>
-
-    <!-- כפתור להתחברות ל-MQTT + נורה -->
-    <button onclick="connectMQTT()">Connect to MQTT</button>
-    <span id="status-indicator"></span>
-
-    <p>Status: <span id="led-status">OFF</span></p>
-    <button onclick="toggleLed()">Toggle LED</button>
-
-    <!-- כפתור OTA -->
-    <p id="ota-status">OTA Status: Not started</p>
-    <button onclick="startOTA()">Start OTA Update</button>
-
-    <script src="script.js"></script>
-  </body>
+    // LED toggles
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("Blue").addEventListener("change", e => {
+        if (client && client.connected) {
+          client.publish("Jeka", e.target.checked ? "blue led on" : "blue led off");
+        } else {
+          e.target.checked = !e.target.checked;
+          alert("MQTT not connected");
+        }
+      });
+      document.getElementById("Red").addEventListener("change", e => {
+        if (client && client.connected) {
+          client.publish("Jeka", e.target.checked ? "red led on" : "red led off");
+        } else {
+          e.target.checked = !e.target.checked;
+          alert("MQTT not connected");
+        }
+      });
+    });
+  </script>
+</body>
 </html>
