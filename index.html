@@ -88,7 +88,7 @@
       <h2 class="text-xl font-bold mb-4">LEDs Control</h2>
       <div class="bg-white p-4 rounded-lg shadow space-y-4">
 
-
+        
         <!-- yellow LED -->
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium">Yellow LED</span>
@@ -239,7 +239,7 @@
       document.getElementById("ota-progress").value = 0;
       document.getElementById("ota-percent").textContent = "0%";
 
-      client.publish("Jeka", url);
+      client.publish("OTA_update", url);
     }
     // Load firmware list dynamically from GitHub API
     async function loadFirmwareList() {
