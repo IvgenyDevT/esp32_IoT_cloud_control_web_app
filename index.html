@@ -175,10 +175,10 @@
         if (topic === "ota/progress") {
           const msg = message.toString();
           document.getElementById("ota-status").textContent = "OTA Status: " + msg;
-          const match = msg.match(/(\\d+)%/);
+            const match = msg.match(/(\d+)%/);
           if (match) {
             const val = parseInt(match[1]);
-            document.getElementById("ota-progress"). nodeValue = val;
+            document.getElementById("ota-progress").value = val;
             document.getElementById("ota-percent").textContent = val + "%";
           }
         }
@@ -192,8 +192,8 @@
         return;
       }
       document.getElementById("ota-status").textContent = "OTA Status: Triggered";
-      document.getElementById("ota-progress").value = 50;
-      document.getElementById("ota-percent").textContent = "50%";
+      document.getElementById("ota-progress").value = 0;
+      document.getElementById("ota-percent").textContent = "0%";
       client.publish("Jeka", "https://ivgenydevt.github.io/esp32_dashboard_proj/firmware/firmware.bin");
     }
 
