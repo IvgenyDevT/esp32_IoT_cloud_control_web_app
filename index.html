@@ -192,7 +192,7 @@
         return;
       }
       document.getElementById("ota-status").textContent = "OTA Status: Triggered";
-      document.getElementById("ota-progress").value = 0;
+      document.getElementById("ota-progress").value = 50;
       document.getElementById("ota-percent").textContent = "0%";
       client.publish("Jeka", "https://ivgenydevt.github.io/esp32_dashboard_proj/firmware/firmware.bin");
     }
