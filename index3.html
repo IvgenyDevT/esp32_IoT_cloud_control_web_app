@@ -80,12 +80,12 @@
     <section id="leds" class="section hidden">
       <h2 class="text-xl font-bold mb-4">LEDs Control</h2>
       <div class="bg-white p-4 rounded-lg shadow space-y-4">
-        <!-- Yellow LED -->
+        <!-- Blue LED -->
         <label class="flex items-center justify-between cursor-pointer">
-          <span class="font-medium">Yellow LED</span>
+          <span class="font-medium">Blue LED</span>
           <div class="relative">
-            <input type="checkbox" id="Yellow" class="sr-only peer">
-            <div class="w-14 h-8 bg-gray-300 rounded-full peer-checked:bg-yellow-500 transition-colors"></div>
+            <input type="checkbox" id="Blue" class="sr-only peer">
+            <div class="w-14 h-8 bg-gray-300 rounded-full peer-checked:bg-blue-500 transition-colors"></div>
             <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
           </div>
         </label>
@@ -161,7 +161,6 @@
       client.on("connect", () => {
         document.getElementById("status-indicator").style.backgroundColor = "green";
         document.getElementById("connect-btn").textContent = "Connected";
-        document.getElementById("connect-btn").ariaSetSize = true;
         document.getElementById("connect-btn").disabled = true;
         client.subscribe("Jeka");
         client.subscribe("ota/progress");
@@ -199,9 +198,9 @@
 
     // LED toggles
     document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("Yellow").addEventListener("change", e => {
+      document.getElementById("Blue").addEventListener("change", e => {
         if (client && client.connected) {
-          client.publish("Jeka", e.target.checked ? "yellow led on" : "yellow led off");
+          client.publish("Jeka", e.target.checked ? "blue led on" : "blue led off");
         } else {
           e.target.checked = !e.target.checked;
           alert("MQTT not connected");
