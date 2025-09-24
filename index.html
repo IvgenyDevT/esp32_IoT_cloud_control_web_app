@@ -7,8 +7,8 @@
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
     #status-indicator {
-      width: 15px; height: 15px; border-radius: 50%;
-      background-color: red; display: inline-block; margin-left: 10px;
+      width: 25px; height: 25px; border-radius: 50%;
+      background-color: red; display: inline-block; margin-left: 10px;display: none;
     }
   </style>
 </head>
@@ -70,8 +70,15 @@
     <section id="home" class="section">
       <h2 class="text-xl font-bold mb-4">Home</h2>
       <button onclick="connectMQTT()" id="connect-btn"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow">
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow justify-center items-center flex gap-2">
         Connect MQTT
+         <svg
+         id = "connect-btn-svg"
+          class = "hidden w-6 h-6 animate-spin justify-center items-center" 
+          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+        </svg>
+       
       </button>
       <span id="status-indicator"></span>
     </section>
@@ -80,7 +87,7 @@
     <section id="leds" class="section hidden">
       <h2 class="text-xl font-bold mb-4">LEDs Control</h2>
       <div class="bg-white p-4 rounded-lg shadow space-y-4">
-        <!-- Yellow LED -->
+        <!-- yellow LED -->
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium">Yellow LED</span>
           <div class="relative">
@@ -98,18 +105,42 @@
             <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
           </div>
         </label>
+        <!-- green LED -->
+          <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium">Green LED</span>
+          <div class="relative">
+            <input type="checkbox" id="Green" class="sr-only peer">
+            <div class="w-14 h-8 bg-gray-300 rounded-full peer-checked:bg-green-500 transition-colors"></div>
+            <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
+          </div>
+        </label>
       </div>
     </section>
 
     <!-- OTA -->
     <section id="ota" class="section hidden">
-      <h2 class="text-xl font-bold mb-4">OTA Update</h2>
+      <h2 class="text-xl font-semibold mb-4">OTA Update</h2>
       <div class="bg-white p-4 rounded-lg shadow space-y-3">
-        <p id="ota-status" class="text-gray-700">OTA Status: Not started</p>
-        <button onclick="startOTA()" class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow">
-          Start OTA Update
-        </button>
-        <div class="flex items-center gap-3">
+        <p id="ota-status" class="text-gray-700">Select firmware and start update:</p>
+
+        <div class="flex items-center justify-between gap-3">
+          
+          <!-- Button -->
+          <button onclick="startOTA()"
+                  class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 transition">
+            Start OTA
+          </button>
+          
+          <!-- Dropdown -->
+          <select id="firmware-list"
+                  class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+            <option>Loading versions...</option>
+          </select>
+
+        </div>
+
+        <!-- Progress -->
+        <div class="flex items-center gap-3 mt-4">
           <progress id="ota-progress" max="100" value="0" class="w-full h-3"></progress>
           <span id="ota-percent" class="text-sm w-12 text-right">0%</span>
         </div>
@@ -155,13 +186,19 @@
 
     function connectMQTT() {
       if (client && client.connected) return;
+      
       document.getElementById("status-indicator").style.backgroundColor = "yellow";
       client = mqtt.connect(broker, options);
+      document.getElementById("connect-btn-svg").classList.remove("hidden");
 
-      client.on("connect", () => {
+      
+      
+      client.on("connect",async () => {
+         await new Promise(r => setTimeout(r, 3000));
+         document.getElementById("connect-btn-svg").classList.remove("hidden");
         document.getElementById("status-indicator").style.backgroundColor = "green";
         document.getElementById("connect-btn").textContent = "Connected";
-        document.getElementById("connect-btn").ariaSetSize = true;
+        document.getElementById("connect-btn").classList.add("bg-green-600");
         document.getElementById("connect-btn").disabled = true;
         client.subscribe("Jeka");
         client.subscribe("ota/progress");
@@ -175,7 +212,7 @@
         if (topic === "ota/progress") {
           const msg = message.toString();
           document.getElementById("ota-status").textContent = "OTA Status: " + msg;
-            const match = msg.match(/(\d+)%/);
+          const match = msg.match(/(\d+)%/);
           if (match) {
             const val = parseInt(match[1]);
             document.getElementById("ota-progress").value = val;
@@ -191,11 +228,33 @@
         document.getElementById("ota-status").textContent = "OTA Status: Not connected";
         return;
       }
+      const url = document.getElementById("firmware-list").value;
       document.getElementById("ota-status").textContent = "OTA Status: Triggered";
       document.getElementById("ota-progress").value = 0;
       document.getElementById("ota-percent").textContent = "0%";
-      client.publish("Jeka", "https://ivgenydevt.github.io/esp32_dashboard_proj/firmware/firmware.bin");
+
+      client.publish("OTA_update", url);
     }
+    // Load firmware list dynamically from GitHub API
+    async function loadFirmwareList() {
+      const url = "https://api.github.com/repos/ivgenydevt/esp32_dashboard_proj/contents/firmware";
+      const res = await fetch(url);
+      const files = await res.json();
+
+      const select = document.getElementById("firmware-list");
+      select.innerHTML = "";
+
+      files.forEach(file => {
+        if (file.name.endsWith(".bin")) {
+          const option = document.createElement("option");
+          option.value = `https://ivgenydevt.github.io/esp32_dashboard_proj/firmware/${file.name}`;
+          option.textContent = file.name;
+          select.appendChild(option);
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", loadFirmwareList);
 
     // LED toggles
     document.addEventListener("DOMContentLoaded", () => {
@@ -207,6 +266,7 @@
           alert("MQTT not connected");
         }
       });
+
       document.getElementById("Red").addEventListener("change", e => {
         if (client && client.connected) {
           client.publish("Jeka", e.target.checked ? "red led on" : "red led off");
@@ -215,6 +275,16 @@
           alert("MQTT not connected");
         }
       });
+
+      document.getElementById("Green").addEventListener("change", e => {
+        if (client && client.connected) {
+          client.publish("Jeka", e.target.checked ? "green led on" : "green led off");
+        } else {
+          e.target.checked = !e.target.checked;
+          alert("MQTT not connected");
+        }
+      });
+
     });
   </script>
 </body>
