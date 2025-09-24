@@ -230,15 +230,27 @@
 
         // Device connection info
         if (topic === "Jeka") {
-          const infoBox = document.getElementById("device-info");
-          if (msg.startsWith("Device:") || msg.startsWith("Firmware:") ||
-              msg.startsWith("WiFi:") || msg.startsWith("IP:") ||
-              msg.startsWith("RSSI:")) {
-            const line = document.createElement("p");
-            line.textContent = msg;
-            infoBox.appendChild(line);
-          }
-        }
+  const infoBox = document.getElementById("device-info");
+
+  // נאסוף את ההודעות בסדר
+  if (!window.deviceData) window.deviceData = [];
+  window.deviceData.push(msg);
+
+  // כשיש את כל השדות (6 במספר)
+  if (window.deviceData.length >= 6) {
+    infoBox.innerHTML = ""; // ננקה קודם
+
+    const labels = ["Device Name", "Firmware", "WiFi SSID", "IP Address", "MAC Address", "RSSI"];
+    window.deviceData.forEach((val, i) => {
+      const line = document.createElement("p");
+      line.innerHTML = `<span class="font-semibold">${labels[i]}:</span> ${val}`;
+      infoBox.appendChild(line);
+    });
+
+    // אפס לאתחול מחדש לבדיקה הבאה
+    window.deviceData = [];
+  }
+}
       });
     }
 
