@@ -87,6 +87,8 @@
     <section id="leds" class="section hidden">
       <h2 class="text-xl font-bold mb-4">LEDs Control</h2>
       <div class="bg-white p-4 rounded-lg shadow space-y-4">
+
+
         <!-- yellow LED -->
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium">Yellow LED</span>
@@ -96,6 +98,8 @@
             <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
           </div>
         </label>
+
+
         <!-- Red LED -->
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium">Red LED</span>
@@ -105,6 +109,8 @@
             <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
           </div>
         </label>
+
+
         <!-- green LED -->
           <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium">Green LED</span>
@@ -233,7 +239,7 @@
       document.getElementById("ota-progress").value = 0;
       document.getElementById("ota-percent").textContent = "0%";
 
-      client.publish("OTA_update", url);
+      client.publish("Jeka", url);
     }
     // Load firmware list dynamically from GitHub API
     async function loadFirmwareList() {
