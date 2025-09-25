@@ -353,6 +353,9 @@
             document.getElementById("ota-progress").value = val;
             document.getElementById("ota-percent").textContent = val + "%";
           }
+          if(msg.includes("restarting")) {
+          checkDeviceConnection();
+          }
         }
         if (topic === "Jeka") {
           const fields = ["Device Name:", "Firmware:", "WiFi SSID:", "IP Address:", "MAC Address:", "RSSI:"];
@@ -413,7 +416,7 @@
       document.getElementById("ota-status").textContent = "OTA Status: Triggered";
       document.getElementById("ota-progress").value = 0;
       document.getElementById("ota-percent").textContent = "0%";
-      MQTT_client.publish("OTA_update", url);
+      MQTT_client.publish("Jeka", url);
     }
 
     async function loadFirmwareList() {
