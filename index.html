@@ -416,7 +416,7 @@
       document.getElementById("ota-status").textContent = "OTA Status: Triggered";
       document.getElementById("ota-progress").value = 0;
       document.getElementById("ota-percent").textContent = "0%";
-      MQTT_client.publish("Jeka", url);
+      MQTT_client.publish("OTA_update", url);
     }
 
     async function loadFirmwareList() {
