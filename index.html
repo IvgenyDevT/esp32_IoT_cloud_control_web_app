@@ -7,134 +7,260 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
-    #status-indicator {
-      width: 1px;
-      height: 1px;
+    .status-indicator {
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       background-color: red;
-      display: none;
-      margin-left: 10px;
+      display: inline-block;
+      margin-left: 6px;
     }
   </style>
 </head>
 <body class="bg-gray-100">
 
-  <!-- Top bar -->
+  <!-- ====================== Top bar ============================================== -->
   <header class="flex items-center justify-between px-4 py-3 bg-white shadow-md">
     <button id="menu-btn" class="text-gray-700">
+      <!-- ☰ -->
       <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M4 6h16M4 12h16M4 18h16"/>
       </svg>
     </button>
-    <h1 class="text-xl font-bold">ESP32 Dashboard</h1>
+    <h1 class="text-xl text-gray-600 font-bold">ESP32 Dashboard</h1>
     <span></span>
   </header>
 
-  <!-- Sidebar -->
+  <!-- ====================== Global Status Bar ============================================== -->
+  <div class="bg-white shadow-md p-2 flex items-center justify-around text-sm">
+    <div>
+      MQTT: <span id="global-mqtt-status" class="font-medium text-red-600">Not connected</span>
+      <span id="global-mqtt-indicator" class="status-indicator"></span>
+    </div>
+    <div>
+      Device: <span id="global-device-status" class="font-medium text-red-600">Not connected</span>
+      <span id="global-device-indicator" class="status-indicator"></span>
+    </div>
+  </div>
+
+  <!-- ====================== side menu list ============================================== -->
   <aside id="sidebar"
     class="fixed top-0 left-0 w-64 h-full bg-white shadow-lg transform -translate-x-full transition-transform duration-300 z-40">
     <div class="p-6 font-bold text-2xl">ESP32</div>
     <nav class="px-4 space-y-2">
       <button onclick="showSection('home')"
-              class="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-200 text-gray-700 font-medium">🏠 Home</button>
+              class="w-full flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
+        <!-- Home SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+        </svg>
+        Home
+      </button>
+
       <button onclick="showSection('leds')"
-              class="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-200 text-gray-700 font-medium">💡 LEDs</button>
+              class="w-full flex items-center gap-3 px-4 py-2 rounded-lg  bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
+        <!-- LEDs SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+        </svg>
+        LEDs
+      </button>
+
       <button onclick="showSection('ota')"
-              class="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-200 text-gray-700 font-medium">⬆️ OTA</button>
+              class="w-full flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
+        <!-- OTA SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+        </svg>
+        OTA
+      </button>
+
+
+      <button onclick="showSection('LCD')"
+        class="w-full flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125Z" />
+          </svg>
+        LCD
+      </button>
+
+      <button onclick="showSection('WiFi scan')"
+        class="w-full flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
+         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
+        </svg>
+
+        WiFi scan
+      </button>
+
     </nav>
   </aside>
 
-  <!-- Overlay -->
-  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-30"></div>
+  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-30"></div>
 
-  <!-- Main Content -->
+  <!-- ====================== main content ============================================== -->
   <main class="p-6">
-    <!-- Home -->
+
+    <!-- ====================== Home page ============================================== -->
     <section id="home" class="section">
-      <h2 class="text-xl font-bold mb-4">Home</h2>
-      <!-- Connect MQTT -->
-      <button onclick="connectMQTT()" id="connect-btn"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow flex items-center gap-2">
-        Connect MQTT
-        <svg id="connect-btn-svg"
-             class="hidden w-6 h-6 animate-spin"
-             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-             stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round"
-                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-        </svg>
-      </button>
-      <span id="status-indicator"></span>
+      <h1 class="text-4xl font-medium mb-12 text-gray-600 gap-4 space-y-4">Home</h1>
 
-      <!-- Check Device Connection -->
-      <div class="mt-6">
-        <button onclick="checkDeviceConnection()"
-                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow">
-          Check Device Connection
+      <h2 class="text-2xl  mb-2 text-gray-800 gap-1 space-y-1">MQTT Connection</h2>
+
+      <div class="flex items-center gap-4 mb-10 mt-4">
+        <button onclick="connectMQTT()" id="connect-btn"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow flex items-center gap-1">
+          Connect MQTT
+          <svg id="connect-btn-svg"
+               class="hidden w-6 h-6 animate-spin"
+               xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
         </button>
+        <span id="mqtt-status" class="text-gray-700 font-medium">Not connected</span>
+        <span id="status-indicator" class="status-indicator"></span>
+      </div>
 
-        <!-- כאן נשבץ את הכרטיסים -->
-        <div id="device-info"
-             class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
-        </div>
+      <hr class="my-8">
+
+      <h2 class="text-2xl  mb-3 text-gray-800">IoT device Connection</h2>
+
+      <div class="flex items-center gap-4 mb-6">
+        <button onclick="checkDeviceConnection()"
+                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow flex items-center gap-2">
+          Check Device Connection
+          <svg id="check-esp-con-btn-svg"
+               class="hidden w-6 h-6 animate-spin"
+               xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
+        </button>
+        <span id="device-status" class="text-gray-700 font-medium ">Not checked</span>
+        <span id="device-indicator" class="status-indicator"></span>
+      </div>
+
+      <div class="mb-6 mt-10 text-gray-700 ">Device info (last received):</div>
+
+      <div id="device-info" class="flex flex-col gap-4">
+        <div id="Device Name:" class="p-3 bg-white rounded-lg shadow">Device Name: <span class="text-gray-500">---</span></div>
+        <div id="Firmware:" class="p-3 bg-white rounded-lg shadow">Firmware: <span class="text-gray-500">---</span></div>
+        <div id="WiFi SSID:" class="p-3 bg-white rounded-lg shadow">WiFi SSID: <span class="text-gray-500">---</span></div>
+        <div id="IP Address:" class="p-3 bg-white rounded-lg shadow">IP Address: <span class="text-gray-500">---</span></div>
+        <div id="MAC Address:" class="p-3 bg-white rounded-lg shadow">MAC Address: <span class="text-gray-500">---</span></div>
+        <div id="RSSI:" class="p-3 bg-white rounded-lg shadow">RSSI: <span class="text-gray-500">---</span></div>
       </div>
     </section>
 
-    <!-- LEDs -->
-    <section id="leds" class="section hidden">
-      <h2 class="text-xl font-bold mb-4">LEDs Control</h2>
-      <div class="bg-white p-4 rounded-lg shadow space-y-4">
-        <!-- Yellow LED -->
-        <label class="flex items-center justify-between cursor-pointer">
-          <span class="font-medium">Yellow LED</span>
-          <div class="relative">
-            <input type="checkbox" id="Yellow" class="sr-only peer">
-            <div class="w-14 h-8 bg-gray-300 rounded-full peer-checked:bg-yellow-500 transition-colors"></div>
-            <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
-          </div>
-        </label>
+<!-- ====================== LEDs control page ============================================== -->
+<section id="leds" class="section hidden">
+  <h2 class="text-xl font-bold text-gray-600 mb-4 mt-4">LEDs Control</h2>
 
-        <!-- Red LED -->
-        <label class="flex items-center justify-between cursor-pointer">
-          <span class="font-medium">Red LED</span>
-          <div class="relative">
-            <input type="checkbox" id="Red" class="sr-only peer">
-            <div class="w-14 h-8 bg-gray-300 rounded-full peer-checked:bg-red-500 transition-colors"></div>
-            <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
-          </div>
-        </label>
+  <div class="bg-white p-4 rounded-lg shadow space-y-4 gap-4 mb-6">
 
-        <!-- Green LED -->
-        <label class="flex items-center justify-between cursor-pointer">
-          <span class="font-medium">Green LED</span>
-          <div class="relative">
-            <input type="checkbox" id="Green" class="sr-only peer">
-            <div class="w-14 h-8 bg-gray-300 rounded-full peer-checked:bg-green-500 transition-colors"></div>
-            <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></span>
-          </div>
-        </label>
+    <!-- Yellow LED -->
+    <label class="flex items-center justify-between cursor-pointer">
+      <span class="font-medium">Yellow LED</span>
+      <div class="relative">
+      <input type="checkbox" id="Yellow" class="sr-only peer">
+      <div class="w-14 h-8 bg-gray-300 rounded-full relative transition-colors peer-checked:bg-yellow-500"></div>
+        <span class="absolute top-1 left-1 h-6 w-6 bg-white rounded-full 
+                     transition-transform  peer-checked:translate-x-6"></span>
       </div>
-    </section>
+    </label>
+ </div>
 
-    <!-- OTA -->
+ <div class="bg-white p-4 rounded-lg shadow space-y-4 gap-4 mb-6">
+    <!-- Red LED -->
+    <label class="flex items-center justify-between cursor-pointer">
+      <span class="font-medium">Red LED</span>
+      <div class="relative">
+      <input type="checkbox" id="Red" class="sr-only peer">
+      <div class="w-14 h-8 bg-gray-300 rounded-full relative transition-colors duration-300 peer-checked:bg-red-500"></div>
+        <span class="absolute top-1 left-1 h-6 w-6 bg-white rounded-full 
+                     transition-transform duration-300 peer-checked:translate-x-6"></span>
+      </div>
+    </label>
+  </div>
+
+
+  <div class="bg-white p-4 rounded-lg shadow space-y-4 gap-4 mb-6">
+    <!-- Green LED -->
+    <label class="flex items-center justify-between cursor-pointer">
+      <span class="font-medium">Green LED</span>
+      <div class="relative">
+      <input type="checkbox" id="Green" class="sr-only peer">
+      <div class="w-14 h-8 bg-gray-300 rounded-full relative transition-colors duration-300 peer-checked:bg-green-500"></div>
+        <span class="absolute left-1 top-1 h-6 w-6 bg-white rounded-full 
+                   transition-transform peer-checked:translate-x-6"></span>
+      </div>
+    </label>
+
+  </div>
+</section>
+
+
+<section id="LCD" class="section hidden">
+  <h2 class="text-xl font-bold text-gray-600 mb-4 mt-4">LCD Control</h2>
+
+  <label class="block mb-4">
+    <input type="text" id="lcd-text" placeholder="Enter text to LCD"
+           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+  </label>
+
+  <button onclick="sendLCDText()"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow">
+    Display on LCD
+    </button>
+
+    <!-- ====================== OTA update page ============================================== -->
     <section id="ota" class="section hidden">
-      <h2 class="text-xl font-semibold mb-4">OTA Update</h2>
+      <h2 class="text-xl font-bold text-gray-600 mb-4 mt-4">OTA Update</h2>
       <div class="bg-white p-4 rounded-lg shadow space-y-3">
         <p id="ota-status" class="text-gray-700">Select firmware and start update:</p>
 
         <div class="flex items-center justify-between gap-3">
+          <!-- Start OTA Button -->
           <button onclick="startOTA()"
                   class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 transition">
             Start OTA
           </button>
 
-          <select id="firmware-list"
-                  class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
-            <option>Loading versions...</option>
-          </select>
+          <!-- Dropdown Menu -->
+          <div class="relative inline-block text-left">
+            <div>
+              <button id="firmware-button" type="button"
+                      class="flex items-center justify-between w-56 rounded-md px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      aria-expanded="true" aria-haspopup="true">
+                <span id="firmware-selected">Choose version</span>
+                <svg class="w-5 h-5 ml-2 -mr-1 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+            </div>
+
+            <div id="firmware-menu"
+                 class="hidden absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+              <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                <!-- firmware options injected dynamically -->
+              </div>
+            </div>
+          </div>
         </div>
 
+        <!-- Progress -->
         <div class="flex items-center gap-3 mt-4">
           <progress id="ota-progress" max="100" value="0" class="w-full h-3"></progress>
           <span id="ota-percent" class="text-sm w-12 text-right">0%</span>
@@ -143,7 +269,7 @@
     </section>
   </main>
 
-  <!-- JavaScript -->
+  <!-- ====================================== JAVA SCRIPT ========================================================= -->
   <script>
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
@@ -166,7 +292,8 @@
     }
     showSection("home");
 
-    let client = null;
+    let MQTT_client = null;
+    let deviceConnected = false;
     const broker = "wss://2a7e41fb3049421ba6af414adaf4f849.s1.eu.hivemq.cloud:8884/mqtt";
     const options = {
       username: "JekaDeGever",
@@ -176,34 +303,48 @@
       reconnectPeriod: 4000,
     };
 
+    function updateGlobalIndicators() {
+      const mqttStatus = document.getElementById("mqtt-status").textContent;
+      document.getElementById("global-mqtt-status").textContent = mqttStatus;
+      document.getElementById("global-mqtt-status").style.color =
+        document.getElementById("mqtt-status").style.color;
+      document.getElementById("global-mqtt-indicator").style.backgroundColor =
+        document.getElementById("status-indicator").style.backgroundColor;
+
+      const deviceStatus = document.getElementById("device-status").textContent;
+      document.getElementById("global-device-status").textContent = deviceStatus;
+      document.getElementById("global-device-status").style.color =
+        document.getElementById("device-status").style.color;
+      document.getElementById("global-device-indicator").style.backgroundColor =
+        document.getElementById("device-indicator").style.backgroundColor;
+    }
+
     function connectMQTT() {
-      if (client && client.connected) return;
-
-      document.getElementById("status-indicator").style.display = "inline-block";
+      if (MQTT_client && MQTT_client.connected) return;
       document.getElementById("status-indicator").style.backgroundColor = "yellow";
+      document.getElementById("mqtt-status").textContent = "Connecting...";
       document.getElementById("connect-btn-svg").classList.remove("hidden");
+      updateGlobalIndicators();
+      MQTT_client = mqtt.connect(broker, options);
 
-      client = mqtt.connect(broker, options);
-
-      client.on("connect", async () => {
-        await new Promise(r => setTimeout(r, 1500));
+      MQTT_client.on("connect", () => {
         document.getElementById("connect-btn-svg").classList.add("hidden");
         document.getElementById("status-indicator").style.backgroundColor = "green";
-        document.getElementById("connect-btn").textContent = "Connected";
-        document.getElementById("connect-btn").classList.add("bg-green-600");
-        document.getElementById("connect-btn").disabled = true;
-
-        client.subscribe("Jeka");
-        client.subscribe("ota/progress");
+        document.getElementById("mqtt-status").textContent = "Connected";
+        document.getElementById("mqtt-status").style.color = "green";
+        updateGlobalIndicators();
+        MQTT_client.subscribe("Jeka");
+        MQTT_client.subscribe("ota/progress");
       });
 
-      client.on("error", () => {
+      MQTT_client.on("error", () => {
         document.getElementById("status-indicator").style.backgroundColor = "red";
+        document.getElementById("mqtt-status").textContent = "Error";
+        updateGlobalIndicators();
       });
 
-      client.on("message", (topic, message) => {
+      MQTT_client.on("message", (topic, message) => {
         const msg = message.toString();
-
         if (topic === "ota/progress") {
           document.getElementById("ota-status").textContent = "OTA Status: " + msg;
           const match = msg.match(/(\d+)%/);
@@ -213,61 +354,66 @@
             document.getElementById("ota-percent").textContent = val + "%";
           }
         }
-
-        // Device connection info
         if (topic === "Jeka") {
-          const infoBox = document.getElementById("device-info");
-
-          if (!window.deviceData) window.deviceData = [];
-          window.deviceData.push(msg);
-
-          if (window.deviceData.length >= 6) {
-            infoBox.innerHTML = "";
-
-            window.deviceData.forEach(val => {
-              const card = document.createElement("div");
-              card.className = "p-4 bg-white rounded-lg shadow";
-              card.textContent = val;
-              infoBox.appendChild(card);
-            });
-
-            infoBox.classList.remove("hidden");
-            window.deviceData = [];
-          }
+          const fields = ["Device Name:", "Firmware:", "WiFi SSID:", "IP Address:", "MAC Address:", "RSSI:"];
+          fields.forEach(label => {
+            if (msg.startsWith(label)) {
+              const container = document.getElementById(label);
+              if (container) {
+                const value = msg.replace(label, "").trim();
+                container.innerHTML = `${label} <span class="text-gray-900 font-medium">${value}</span>`;
+              }
+            }
+          });
         }
       });
     }
 
     function checkDeviceConnection() {
-      if (!client || !client.connected) {
+      if (!MQTT_client || !MQTT_client.connected) {
         alert("MQTT not connected");
         return;
       }
-
-      const infoBox = document.getElementById("device-info");
-      infoBox.innerHTML = "";
-      infoBox.classList.remove("hidden");
-
-      client.publish("Jeka", "check_connection");
-
+      document.getElementById("check-esp-con-btn-svg").classList.remove("hidden");
+      document.getElementById("device-status").textContent = "Checking...";
+      document.getElementById("device-indicator").style.backgroundColor = "yellow";
+      updateGlobalIndicators();
+      document.querySelectorAll("#device-info span").forEach(s => s.textContent = "---");
+      MQTT_client.publish("Jeka", "check_connection");
       setTimeout(() => {
-        if (infoBox.innerHTML.trim() === "") {
-          infoBox.innerHTML = "<p class='text-red-600 font-medium'>Device not connected</p>";
+        const values = [...document.querySelectorAll("#device-info span")].map(s => s.textContent);
+        if (values.every(v => v === "---")) {
+          document.getElementById("device-status").textContent = "Device not found";
+          document.getElementById("device-indicator").style.backgroundColor = "red";
+          document.getElementById("check-esp-con-btn-svg").classList.add("hidden");
+          deviceConnected = false;
+        } else {
+          document.getElementById("device-status").textContent = "Connected";
+          document.getElementById("device-status").style.color = "green";
+          document.getElementById("device-indicator").style.backgroundColor = "green";
+          document.getElementById("check-esp-con-btn-svg").classList.add("hidden");
+          deviceConnected = true;
         }
+        updateGlobalIndicators();
       }, 3000);
     }
 
     function startOTA() {
-      if (!client || !client.connected) {
-        document.getElementById("ota-status").textContent = "OTA Status: Not connected";
+      if (!MQTT_client || !MQTT_client.connected || !deviceConnected) {
+        document.getElementById("ota-status").textContent =
+          "OTA Status: Not connected (MQTT + Device required)";
         return;
       }
-      const url = document.getElementById("firmware-list").value;
+      const selected = document.getElementById("firmware-selected");
+      const url = selected.getAttribute("data-url");
+      if (!url) {
+        alert("Please select firmware version first!");
+        return;
+      }
       document.getElementById("ota-status").textContent = "OTA Status: Triggered";
       document.getElementById("ota-progress").value = 0;
       document.getElementById("ota-percent").textContent = "0%";
-
-      client.publish("OTA_update", url);
+      MQTT_client.publish("OTA_update", url);
     }
 
     async function loadFirmwareList() {
@@ -275,29 +421,44 @@
       const res = await fetch(url);
       const files = await res.json();
 
-      const select = document.getElementById("firmware-list");
-      select.innerHTML = "";
+      const menu = document.querySelector("#firmware-menu .py-1");
+      menu.innerHTML = "";
 
       files.forEach(file => {
         if (file.name.endsWith(".bin")) {
-          const option = document.createElement("option");
-          option.value = `https://ivgenydevt.github.io/esp32_dashboard_proj/firmware/${file.name}`;
-          option.textContent = file.name;
-          select.appendChild(option);
+          const a = document.createElement("a");
+          a.href = "#";
+          a.textContent = file.name;
+          a.className = "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100";
+          a.setAttribute("data-url", `https://ivgenydevt.github.io/esp32_dashboard_proj/firmware/${file.name}`);
+          a.addEventListener("click", e => {
+            e.preventDefault();
+            document.getElementById("firmware-selected").textContent = file.name;
+            document.getElementById("firmware-selected").setAttribute("data-url", a.getAttribute("data-url"));
+            document.getElementById("firmware-menu").classList.add("hidden");
+          });
+          menu.appendChild(a);
         }
       });
     }
 
-    document.addEventListener("DOMContentLoaded", loadFirmwareList);
-
+    // dropdown toggle
     document.addEventListener("DOMContentLoaded", () => {
+      loadFirmwareList();
+
+      const button = document.getElementById("firmware-button");
+      const menu = document.getElementById("firmware-menu");
+      button.addEventListener("click", () => {
+        menu.classList.toggle("hidden");
+      });
+
       ["Yellow", "Red", "Green"].forEach(color => {
         document.getElementById(color).addEventListener("change", e => {
-          if (client && client.connected) {
-            client.publish("Jeka", `${color.toLowerCase()} led ${e.target.checked ? "on" : "off"}`);
+          if (MQTT_client && MQTT_client.connected && deviceConnected) {
+            MQTT_client.publish("Jeka", `${color.toLowerCase()} led ${e.target.checked ? "on" : "off"}`);
           } else {
             e.target.checked = !e.target.checked;
-            alert("MQTT not connected");
+            alert("MQTT + Device must be connected");
           }
         });
       });
