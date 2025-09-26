@@ -139,7 +139,7 @@
                 class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow flex items-center gap-1">
           Connect MQTT
           <svg id="connect-btn-svg"
-               class="hidden w-6 h-6 animate-spin"
+               class="hidden w-5 h-5 animate-spin"
                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -159,7 +159,7 @@
                 class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow flex items-center gap-2">
           Check Device Connection
           <svg id="check-esp-con-btn-svg"
-               class="hidden w-6 h-6 animate-spin"
+               class="hidden w-5 h-5 animate-spin"
                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -348,6 +348,7 @@
 
     let MQTT_client = null;
     let deviceConnected = false;
+    let WiFi_ssid = "";
     const broker = "wss://2a7e41fb3049421ba6af414adaf4f849.s1.eu.hivemq.cloud:8884/mqtt";
     const options = {
       username: "JekaDeGever",
@@ -402,6 +403,7 @@
         MQTT_client.subscribe("wifi_connection");
         MQTT_client.subscribe("device_connection_info");
         MQTT_client.subscribe("wifi_connection_status");
+        
 
         
         
@@ -454,9 +456,14 @@
           const fields = ["Device Name:", "Firmware:", "WiFi SSID:", "IP Address:", "MAC Address:", "RSSI:"];
           fields.forEach(label => {
             if (msg.startsWith(label)) {
+
               const container = document.getElementById(label);
               if (container) {
                 const value = msg.replace(label, "").trim();
+    
+                if(label === "WiFi SSID:") {
+                  WiFi_ssid = value;
+                }
                 container.innerHTML = `${label} <span class="text-gray-900 font-medium">${value}</span>`;
               }
             }
@@ -472,6 +479,28 @@
           } catch (e) {
               console.error("Invalid WiFi scan data", e);
             }
+        }
+
+
+
+        if(topic === "wifi_connection_status") {
+          document.getElementById("wifi-connect-btn").disabled = false;
+          if(msg === "wifi connected") {
+            //alert(`Connected to WiFi: ${WiFi_ssid}`);
+            document.getElementById("wifi-modal").style.display = "none";
+            document.getElementById("wifi-ssid").value = "";
+            document.getElementById("wifi-password").value = "";
+
+            document.getElementById("wifi-connect-btn").textContent = "Connected";
+            document.getElementById("wifi-connect-btn").backgroundColor = "green";
+            document.getElementById("wifi-connect-btn").disabled = true;
+            closeWiFiModal();
+
+            checkDeviceConnection();
+            scanWiFi();
+          } else {
+            alert("Failed to connect to WiFi");
+          }
         }
     
 
@@ -634,7 +663,15 @@ function scanWiFi() {
     alert("MQTT must be connected");
     return;
   }
-  document.getElementById("wifi-list").innerHTML = "<p class='text-gray-600'>Scanning...</p>";
+document.getElementById("wifi-list").innerHTML = `
+  <div class="flex items-center gap-2 text-gray-600">
+    <span>Scanning...</span>
+   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class=" animate-ping size-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
+        </svg>
+  </div>
+`;
+
   MQTT_client.publish("scan_wifi_nets", "NULLarg");
  
 }
@@ -654,10 +691,22 @@ function showWiFiNetworks(list) {
     div.className = "p-3 bg-white rounded-lg shadow flex justify-between items-center";
     div.innerHTML = `
       <span>${net.ssid} (${net.rssi} dBm)</span>
-      <button class="px-3 py-1 bg-indigo-600 text-white rounded connect-btn" data-ssid="${net.ssid}">
+      <button class=  "px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded connect-btn" data-ssid="${net.ssid}">
         Connect
       </button>
     `;
+    
+    
+    const btn = div.querySelector("button");
+if (net.ssid === WiFi_ssid) {
+  //div.style.fontWeight = "bold";
+  div.style.backgroundColor = "#e0f7fa";
+  btn.disabled = true;
+  btn.textContent = "Connected";
+  btn.classList.remove("bg-indigo-600", "hover:bg-indigo-500");
+  btn.classList.add("bg-green-400", "cursor-not-allowed");
+      
+    }
     container.appendChild(div);
   });
 
