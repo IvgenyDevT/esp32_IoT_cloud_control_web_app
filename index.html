@@ -357,6 +357,9 @@
       reconnectPeriod: 4000,
     };
 
+
+
+
     function updateGlobalIndicators() {
       const mqttStatus = document.getElementById("mqtt-status").textContent;
       document.getElementById("global-mqtt-status").textContent = mqttStatus;
@@ -373,6 +376,12 @@
         document.getElementById("device-indicator").style.backgroundColor;
     }
 
+
+
+
+
+
+
     function connectMQTT() {
       if (MQTT_client && MQTT_client.connected) return;
       document.getElementById("status-indicator").style.backgroundColor = "yellow";
@@ -388,7 +397,14 @@
         document.getElementById("mqtt-status").style.color = "green";
         updateGlobalIndicators();
         MQTT_client.subscribe("Jeka");
-        MQTT_client.subscribe("ota/progress");
+        MQTT_client.subscribe("OTA_update_progress");
+        MQTT_client.subscribe("scan_wifi_result");
+        MQTT_client.subscribe("wifi_connection");
+        MQTT_client.subscribe("device_connection_info");
+        MQTT_client.subscribe("wifi_connection_status");
+
+        
+        
       });
 
       MQTT_client.on("error", () => {
@@ -397,9 +413,23 @@
         updateGlobalIndicators();
       });
 
-      MQTT_client.on("message", (topic, message) => {
-        const msg = message.toString();
-        if (topic === "ota/progress") {
+
+      MQTT_client.on("message", MQTT_messageHandler);
+
+    }
+
+
+
+
+
+
+    function MQTT_messageHandler(topic, message) {
+      const msg = message.toString();
+
+
+      
+    
+        if (topic === "OTA_update_progress") {
           if(msg.includes("Progress")) {
             document.getElementById("ota-status").textContent = "OTA Status: installing new firmware ...";
           }
@@ -407,16 +437,20 @@
           document.getElementById("ota-status").textContent = "OTA Status: " + msg;
           
           const match = msg.match(/(\d+)%/);
+
           if (match) {
             const val = parseInt(match[1]);
             document.getElementById("ota-progress").value = val;
             document.getElementById("ota-percent").textContent = val + "%";
           }
+
           if(msg.includes("restarting")) {
           checkDeviceConnection();
           }
         }
-        if (topic === "Jeka") {
+
+
+        if (topic === "device_connection_info") {
           const fields = ["Device Name:", "Firmware:", "WiFi SSID:", "IP Address:", "MAC Address:", "RSSI:"];
           fields.forEach(label => {
             if (msg.startsWith(label)) {
@@ -428,8 +462,32 @@
             }
           });
         }
-      });
+
+        
+        
+        if (topic === "scan_wifi_result") {
+          try {
+            const networks = JSON.parse(message.toString());
+            showWiFiNetworks(networks);
+          } catch (e) {
+              console.error("Invalid WiFi scan data", e);
+            }
+        }
+    
+
+      
     }
+  
+      
+    
+
+
+
+
+
+
+
+
 
     function checkDeviceConnection() {
   return new Promise((resolve) => {
@@ -444,7 +502,7 @@
     document.getElementById("device-indicator").style.backgroundColor = "yellow";
     updateGlobalIndicators();
     document.querySelectorAll("#device-info span").forEach(s => s.textContent = "---");
-    MQTT_client.publish("Jeka", "check_connection");
+    MQTT_client.publish("Get_device_connection", "check_connection");
 
     setTimeout(() => {
       const values = [...document.querySelectorAll("#device-info span")].map(s => s.textContent);
@@ -465,6 +523,16 @@
     }, 3000);
   });
 }
+
+
+
+
+
+
+
+
+
+
 
     async function startOTA() {
       
@@ -494,6 +562,17 @@
       MQTT_client.publish("OTA_update", url);
     }
 
+
+
+
+
+
+
+
+
+
+
+
     async function loadFirmwareList() {
       const url = "https://api.github.com/repos/ivgenydevt/esp32_dashboard_proj/contents/firmware";
       const res = await fetch(url);
@@ -520,6 +599,15 @@
       });
     }
 
+
+
+
+
+
+
+
+
+
     function sendLCDText() {
       const text = document.getElementById("lcd-text").value.trim();
       if (!text) {
@@ -535,6 +623,11 @@
     }
 
 
+
+
+
+
+
     // ==================== WiFi Scan logic =========================
 function scanWiFi() {
   if (!MQTT_client || !MQTT_client.connected) {
@@ -542,9 +635,16 @@ function scanWiFi() {
     return;
   }
   document.getElementById("wifi-list").innerHTML = "<p class='text-gray-600'>Scanning...</p>";
-  MQTT_client.publish("wifi", "scan_wifi");
-  MQTT_client.subscribe("wifi_results");
+  MQTT_client.publish("scan_wifi_nets", "NULLarg");
+ 
 }
+
+
+
+
+
+
+
 
 function showWiFiNetworks(list) {
   const container = document.getElementById("wifi-list");
@@ -570,9 +670,23 @@ function showWiFiNetworks(list) {
   });
 }
 
+
+
+
+
+
+
+
 function closeWiFiModal() {
   document.getElementById("wifi-modal").style.display = "none";
 }
+
+
+
+
+
+
+
 
 function connectWiFi() {
   const ssid = document.getElementById("wifi-ssid").value.trim();
@@ -581,8 +695,8 @@ function connectWiFi() {
   document.getElementById("wifi-connect-btn").textContent = "Connecting...";
   document.getElementById("wifi-connect-btn").disabled = true;
 
-  MQTT_client.publish("wifi", ssid + " " + pass);
-  MQTT_client.subscribe("wifi_connection");
+  MQTT_client.publish("connect_new_wifi", ssid + " " + pass);
+  
 
   let timeout = setTimeout(() => {
     alert("Connection failed (timeout)");
@@ -591,36 +705,11 @@ function connectWiFi() {
     closeWiFiModal();
   }, 10000);
 
-  MQTT_client.on("message", (topic, message) => {
-    if (topic === "wifi_connection") {
-      clearTimeout(timeout);
-      const msg = message.toString();
-      if (msg.includes("connected")) {
-        document.getElementById("wifi-connect-btn").textContent = "Connected";
-        document.getElementById("wifi-connect-btn").disabled = true;
-        closeWiFiModal();
-      } else {
-        alert("Connection failed: " + msg);
-        document.getElementById("wifi-connect-btn").textContent = "Connect";
-        document.getElementById("wifi-connect-btn").disabled = false;
-      }
-    }
-  });
+  
 }
 
 // עיבוד תוצאות הסריקה
-if (MQTT_client) {
-  MQTT_client.on("message", (topic, message) => {
-    if (topic === "wifi_results") {
-      try {
-        const networks = JSON.parse(message.toString());
-        showWiFiNetworks(networks);
-      } catch (e) {
-        console.error("Invalid WiFi scan data", e);
-      }
-    }
-  });
-}
+
 
     // dropdown toggle
     document.addEventListener("DOMContentLoaded", () => {
@@ -631,6 +720,10 @@ if (MQTT_client) {
       button.addEventListener("click", () => {
         menu.classList.toggle("hidden");
       });
+
+
+
+      
 
       ["Yellow", "Red", "Green"].forEach(color => {
         document.getElementById(color).addEventListener("change", e => {
