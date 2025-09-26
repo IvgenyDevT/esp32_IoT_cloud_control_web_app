@@ -15,6 +15,26 @@
       display: inline-block;
       margin-left: 6px;
     }
+    .modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
   </style>
 </head>
 <body class="bg-gray-100">
@@ -267,6 +287,40 @@
         </div>
       </div>
     </section>
+
+    <!-- ====================== WiFi Scan page ============================================== -->
+<section id="WiFi scan" class="section hidden">
+  <h2 class="text-xl font-bold text-gray-600 mb-4 mt-4">WiFi Networks</h2>
+  <button onclick="scanWiFi()" 
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow mb-6">
+    Scan WiFi
+  </button>
+  <div id="wifi-list" class="flex flex-col gap-4"></div>
+</section>
+
+<!-- Modal for WiFi connection -->
+<div id="wifi-modal" class="modal">
+  <div class="modal-content">
+    <h3 class="text-lg font-bold mb-4">Connect to WiFi</h3>
+    <label class="block mb-2">
+      SSID:
+      <input type="text" id="wifi-ssid" 
+             class="w-full border rounded px-2 py-1">
+    </label>
+    <label class="block mb-4">
+      Password:
+      <input type="password" id="wifi-password" 
+             class="w-full border rounded px-2 py-1">
+    </label>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeWiFiModal()" 
+              class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
+      <button onclick="connectWiFi()" id="wifi-connect-btn" 
+              class="px-4 py-2 bg-green-600 text-white rounded">Connect</button>
+    </div>
+  </div>
+</div>
+</section>
   </main>
 
   <!-- ====================================== JAVA SCRIPT ========================================================= -->
@@ -346,7 +400,12 @@
       MQTT_client.on("message", (topic, message) => {
         const msg = message.toString();
         if (topic === "ota/progress") {
+          if(msg.includes("Progress")) {
+            document.getElementById("ota-status").textContent = "OTA Status: installing new firmware ...";
+          }
+          else
           document.getElementById("ota-status").textContent = "OTA Status: " + msg;
+          
           const match = msg.match(/(\d+)%/);
           if (match) {
             const val = parseInt(match[1]);
@@ -373,38 +432,54 @@
     }
 
     function checkDeviceConnection() {
-      if (!MQTT_client || !MQTT_client.connected) {
-        alert("MQTT not connected");
-        return;
-      }
-      document.getElementById("check-esp-con-btn-svg").classList.remove("hidden");
-      document.getElementById("device-status").textContent = "Checking...";
-      document.getElementById("device-indicator").style.backgroundColor = "yellow";
-      updateGlobalIndicators();
-      document.querySelectorAll("#device-info span").forEach(s => s.textContent = "---");
-      MQTT_client.publish("Jeka", "check_connection");
-      setTimeout(() => {
-        const values = [...document.querySelectorAll("#device-info span")].map(s => s.textContent);
-        if (values.every(v => v === "---")) {
-          document.getElementById("device-status").textContent = "Device not found";
-          document.getElementById("device-indicator").style.backgroundColor = "red";
-          document.getElementById("check-esp-con-btn-svg").classList.add("hidden");
-          deviceConnected = false;
-        } else {
-          document.getElementById("device-status").textContent = "Connected";
-          document.getElementById("device-status").style.color = "green";
-          document.getElementById("device-indicator").style.backgroundColor = "green";
-          document.getElementById("check-esp-con-btn-svg").classList.add("hidden");
-          deviceConnected = true;
-        }
-        updateGlobalIndicators();
-      }, 3000);
+  return new Promise((resolve) => {
+    if (!MQTT_client || !MQTT_client.connected) {
+      alert("MQTT not connected");
+      deviceConnected = false;
+      return resolve(false);
     }
 
-    function startOTA() {
-      if (!MQTT_client || !MQTT_client.connected || !deviceConnected) {
+    document.getElementById("check-esp-con-btn-svg").classList.remove("hidden");
+    document.getElementById("device-status").textContent = "Checking...";
+    document.getElementById("device-indicator").style.backgroundColor = "yellow";
+    updateGlobalIndicators();
+    document.querySelectorAll("#device-info span").forEach(s => s.textContent = "---");
+    MQTT_client.publish("Jeka", "check_connection");
+
+    setTimeout(() => {
+      const values = [...document.querySelectorAll("#device-info span")].map(s => s.textContent);
+      if (values.every(v => v === "---")) {
+        document.getElementById("device-status").textContent = "Device not found";
+        document.getElementById("device-indicator").style.backgroundColor = "red";
+        document.getElementById("check-esp-con-btn-svg").classList.add("hidden");
+        deviceConnected = false;
+      } else {
+        document.getElementById("device-status").textContent = "Connected";
+        document.getElementById("device-status").style.color = "green";
+        document.getElementById("device-indicator").style.backgroundColor = "green";
+        document.getElementById("check-esp-con-btn-svg").classList.add("hidden");
+        deviceConnected = true;
+      }
+      updateGlobalIndicators();
+      resolve(deviceConnected); 
+    }, 3000);
+  });
+}
+
+    async function startOTA() {
+      
+      if (!MQTT_client || !MQTT_client.connected) {
+        alert("MQTT must be connected");
         document.getElementById("ota-status").textContent =
           "OTA Status: Not connected (MQTT + Device required)";
+        return;
+      }
+      await checkDeviceConnection(); 
+
+      if (!deviceConnected) {
+        alert("Cannot start OTA: Device not connected");
+        document.getElementById("ota-status").textContent =
+          "Device not connected";
         return;
       }
       const selected = document.getElementById("firmware-selected");
@@ -458,6 +533,94 @@
       MQTT_client.publish("LCD_display", `${text}`);
       document.getElementById("lcd-text").value = "";
     }
+
+
+    // ==================== WiFi Scan logic =========================
+function scanWiFi() {
+  if (!MQTT_client || !MQTT_client.connected) {
+    alert("MQTT must be connected");
+    return;
+  }
+  document.getElementById("wifi-list").innerHTML = "<p class='text-gray-600'>Scanning...</p>";
+  MQTT_client.publish("wifi", "scan_wifi");
+  MQTT_client.subscribe("wifi_results");
+}
+
+function showWiFiNetworks(list) {
+  const container = document.getElementById("wifi-list");
+  container.innerHTML = "";
+  list.forEach(net => {
+    const div = document.createElement("div");
+    div.className = "p-3 bg-white rounded-lg shadow flex justify-between items-center";
+    div.innerHTML = `
+      <span>${net.ssid} (${net.rssi} dBm)</span>
+      <button class="px-3 py-1 bg-indigo-600 text-white rounded connect-btn" data-ssid="${net.ssid}">
+        Connect
+      </button>
+    `;
+    container.appendChild(div);
+  });
+
+  document.querySelectorAll(".connect-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const ssid = btn.getAttribute("data-ssid");
+      document.getElementById("wifi-ssid").value = ssid;
+      document.getElementById("wifi-modal").style.display = "flex";
+    });
+  });
+}
+
+function closeWiFiModal() {
+  document.getElementById("wifi-modal").style.display = "none";
+}
+
+function connectWiFi() {
+  const ssid = document.getElementById("wifi-ssid").value.trim();
+  const pass = document.getElementById("wifi-password").value.trim();
+  if (!ssid) return alert("SSID required");
+  document.getElementById("wifi-connect-btn").textContent = "Connecting...";
+  document.getElementById("wifi-connect-btn").disabled = true;
+
+  MQTT_client.publish("wifi", ssid + " " + pass);
+  MQTT_client.subscribe("wifi_connection");
+
+  let timeout = setTimeout(() => {
+    alert("Connection failed (timeout)");
+    document.getElementById("wifi-connect-btn").textContent = "Connect";
+    document.getElementById("wifi-connect-btn").disabled = false;
+    closeWiFiModal();
+  }, 10000);
+
+  MQTT_client.on("message", (topic, message) => {
+    if (topic === "wifi_connection") {
+      clearTimeout(timeout);
+      const msg = message.toString();
+      if (msg.includes("connected")) {
+        document.getElementById("wifi-connect-btn").textContent = "Connected";
+        document.getElementById("wifi-connect-btn").disabled = true;
+        closeWiFiModal();
+      } else {
+        alert("Connection failed: " + msg);
+        document.getElementById("wifi-connect-btn").textContent = "Connect";
+        document.getElementById("wifi-connect-btn").disabled = false;
+      }
+    }
+  });
+}
+
+// עיבוד תוצאות הסריקה
+if (MQTT_client) {
+  MQTT_client.on("message", (topic, message) => {
+    if (topic === "wifi_results") {
+      try {
+        const networks = JSON.parse(message.toString());
+        showWiFiNetworks(networks);
+      } catch (e) {
+        console.error("Invalid WiFi scan data", e);
+      }
+    }
+  });
+}
 
     // dropdown toggle
     document.addEventListener("DOMContentLoaded", () => {
