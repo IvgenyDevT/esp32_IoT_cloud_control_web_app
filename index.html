@@ -35,6 +35,26 @@
   max-width: 400px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .toast.show {
+    opacity: 1;
+  }
+
+
   </style>
 </head>
 <body class="bg-gray-100">
@@ -313,7 +333,7 @@
              class="w-full border rounded px-2 py-1">
     </label>
     <div class="flex justify-end gap-2">
-      <button onclick="closeWiFiModal()" 
+      <button onclick="closeWiFiModal()" id="new-wifi-cancel-btn" 
               class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
       <button onclick="connectWiFi()" id="wifi-connect-btn" 
               class="px-4 py-2 bg-green-600 text-white rounded">Connect</button>
@@ -425,7 +445,7 @@
 
 
 
-    function MQTT_messageHandler(topic, message) {
+    async function MQTT_messageHandler(topic, message) {
       const msg = message.toString();
 
 
@@ -487,30 +507,65 @@
           document.getElementById("wifi-connect-btn").disabled = false;
           if(msg === "wifi connected") {
             //alert(`Connected to WiFi: ${WiFi_ssid}`);
+            clearTimeout(connectNewWifiTimeout);
             document.getElementById("wifi-modal").style.display = "none";
             document.getElementById("wifi-ssid").value = "";
             document.getElementById("wifi-password").value = "";
 
-            document.getElementById("wifi-connect-btn").textContent = "Connected";
-            document.getElementById("wifi-connect-btn").backgroundColor = "green";
-            document.getElementById("wifi-connect-btn").disabled = true;
-            closeWiFiModal();
+            
+            
 
-            checkDeviceConnection();
-            scanWiFi();
-          } else {
-            alert("Failed to connect to WiFi");
-          }
+            document.getElementById("wifi-connect-btn").textContent = "Connect";
+            document.getElementById("wifi-connect-btn").disabled = false;
+            document.getElementById("new-wifi-cancel-btn").disabled = false;
+            document.getElementById("new-wifi-cancel-btn").hidden = false;
+
+            let i =0;
+            await checkDeviceConnection();
+            while(!deviceConnected && i < 3){
+              i++;
+              await checkDeviceConnection();
+            }
+            closeWiFiModal();
+            
+            if(deviceConnected) {
+              scanWiFi();
+              showToast(`Connected to WiFi: ${WiFi_ssid}`,1500);
+            } else {
+              showToast("Connected to WiFi, but device not responding",1500);
+            }
+            
+
+          
+
+
+
+ 
         }
     
 
       
+      }    
     }
   
       
     
 
+function showToast(message, duration = 2000) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  document.body.appendChild(toast);
 
+  // הפעלה של האנימציה
+  setTimeout(() => toast.classList.add("show"), 50);
+
+  // הסרה אחרי זמן נתון
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => document.body.removeChild(toast), 300);
+  }, duration);
+}
 
 
 
@@ -735,7 +790,7 @@ function closeWiFiModal() {
 
 
 
-
+  let connectNewWifiTimeout = null;
 
 function connectWiFi() {
   const ssid = document.getElementById("wifi-ssid").value.trim();
@@ -743,16 +798,19 @@ function connectWiFi() {
   if (!ssid) return alert("SSID required");
   document.getElementById("wifi-connect-btn").textContent = "Connecting...";
   document.getElementById("wifi-connect-btn").disabled = true;
+  document.getElementById("new-wifi-cancel-btn").disabled = true;
+  document.getElementById("new-wifi-cancel-btn").style.backgroundColor = "gray";
 
-  MQTT_client.publish("connect_new_wifi", ssid + " " + pass);
+  MQTT_client.publish("connect_new_wifi", ssid + "|" + pass);
   
 
-  let timeout = setTimeout(() => {
+  connectNewWifiTimeout = setTimeout(() => {
     alert("Connection failed (timeout)");
     document.getElementById("wifi-connect-btn").textContent = "Connect";
     document.getElementById("wifi-connect-btn").disabled = false;
+    גdocument.getElementById("new-wifi-cancel-btn").hidden = true;
     closeWiFiModal();
-  }, 10000);
+  }, 120000);
 
   
 }
