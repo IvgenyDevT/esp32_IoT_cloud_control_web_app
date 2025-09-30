@@ -826,7 +826,7 @@
       `;
 
         MQTT_client.publish("scan_wifi_nets", "NULLarg");
-        consloe.log("log should be here");
+        console.log("log should be here");
         for (let i = 0; i < wifi_creds.length; i++) {
           console.log("ssid: " + wifi_creds[i].ssid + " pass: " + wifi_creds[i].pass);
         }
