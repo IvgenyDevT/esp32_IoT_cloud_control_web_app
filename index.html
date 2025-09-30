@@ -428,6 +428,8 @@
         document.getElementById("status-indicator").style.backgroundColor = "yellow";
         document.getElementById("mqtt-status").textContent = "Connecting...";
         document.getElementById("connect-btn-svg").classList.remove("hidden");
+        document.getElementById("mqtt-status").style.color = "black";
+
         updateGlobalIndicators();
         MQTT_client = mqtt.connect(broker, options);
 
@@ -461,8 +463,11 @@
 
         MQTT_client.on("error", () => {
           clearTimeout(MQTT_Connect_timeout);
+          alert("failed to connect MQTT service");
+          document.getElementById("connect-btn-svg").classList.add("hidden");
           document.getElementById("status-indicator").style.backgroundColor = "red";
-          document.getElementById("mqtt-status").textContent = "Error";
+          document.getElementById("mqtt-status").textContent = "Not connected";
+          document.getElementById("mqtt-status").style.color = "red";
           updateGlobalIndicators();
         });
 
