@@ -2,6 +2,8 @@
 <html lang="en">
 
   <head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2196f3">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta charset="UTF-8">
     <title>ESP32 Dashboard</title>
@@ -574,7 +576,7 @@
 
             if (device_connected) {
               await scanWiFi();
-              showToast(`wifi reconnected back to ${WiFi_ssid}`, 4500);
+              showToast(`wifi reconnected back to WiFi : ${WiFi_ssid}`, 4500);
 
             } else {
 
