@@ -432,10 +432,10 @@
         MQTT_client = mqtt.connect(broker, options);
 
         let MQTT_Connect_timeout = setTimeout(() => {
-
+          alert("failed to connect MQTT service");
           document.getElementById("connect-btn-svg").classList.add("hidden");
           document.getElementById("status-indicator").style.backgroundColor = "red";
-          document.getElementById("mqtt-status").textContent = "Connect";
+          document.getElementById("mqtt-status").textContent = "Not connected";
           document.getElementById("mqtt-status").style.color = "red";
           updateGlobalIndicators();
         }, 15000);
@@ -787,6 +787,10 @@
       function scanWiFi() {
         if (!MQTT_client || !MQTT_client.connected) {
           alert("MQTT must be connected");
+          return;
+        }
+        if (!deviceConnected) {
+          alert("device not connected");
           return;
         }
         document.getElementById("wifi-list").innerHTML = `
