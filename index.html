@@ -431,7 +431,17 @@
         updateGlobalIndicators();
         MQTT_client = mqtt.connect(broker, options);
 
+        let MQTT_Connect_timeout = setTimeout(() => {
+
+          document.getElementById("connect-btn-svg").classList.add("hidden");
+          document.getElementById("status-indicator").style.backgroundColor = "red";
+          document.getElementById("mqtt-status").textContent = "Connect";
+          document.getElementById("mqtt-status").style.color = "red";
+          updateGlobalIndicators();
+        }, 15000);
+
         MQTT_client.on("connect", () => {
+          clearTimeout(MQTT_Connect_timeout);
           document.getElementById("connect-btn-svg").classList.add("hidden");
           document.getElementById("status-indicator").style.backgroundColor = "green";
           document.getElementById("mqtt-status").textContent = "Connected";
@@ -450,6 +460,7 @@
         });
 
         MQTT_client.on("error", () => {
+          clearTimeout(MQTT_Connect_timeout);
           document.getElementById("status-indicator").style.backgroundColor = "red";
           document.getElementById("mqtt-status").textContent = "Error";
           updateGlobalIndicators();
