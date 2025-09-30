@@ -396,7 +396,9 @@
         clean: true,
         connectTimeout: 5000,
         reconnectPeriod: 4000,
+
       };
+      let wifi_creds = [];
 
 
 
@@ -613,6 +615,21 @@
           }
 
         }
+
+        if (topic === "wifi_cred_list") {
+
+
+          const ssidMatch = msg.match(/ssid:\s*(\S+)/);
+          const passMatch = msg.match(/pass:\s*(\S+)/);
+
+          const ssid = ssidMatch ? ssidMatch[1] : null;
+          const pass = passMatch ? passMatch[1] : null;
+
+          console.log("SSID:", ssid); // jenya
+          console.log("PASS:", pass); // 123
+
+          wifi_creds.push({ ssid: ssid, pass: pass });
+        }
       }
 
 
@@ -809,6 +826,10 @@
       `;
 
         MQTT_client.publish("scan_wifi_nets", "NULLarg");
+
+        for (let i = 0; i < wifi_creds.length; i++) {
+          console.log("ssid: " + wifi_creds[i].ssid + " pass: " + wifi_creds[i].pass);
+        }
       }
 
 
