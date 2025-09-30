@@ -485,7 +485,7 @@
       async function MQTT_messageHandler(topic, message) {
         const msg = message.toString();
 
-
+        console.log(`Received message on topic ${topic}: ${msg}`);
 
 
         if (topic === "OTA_update_progress") {
