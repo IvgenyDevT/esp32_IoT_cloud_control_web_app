@@ -618,7 +618,7 @@
 
         if (topic === "wifi_cred_list") {
 
-
+          console.log("Received wifi_cred_list:", msg);
           const ssidMatch = msg.match(/ssid:\s*(\S+)/);
           const passMatch = msg.match(/pass:\s*(\S+)/);
 
