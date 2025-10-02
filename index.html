@@ -553,7 +553,7 @@
 
           document.getElementById("wifi-connect-btn").disabled = false;
 
-          if (msg === "wifi connected") {
+          if (msg === "new wifi connected") {
             //alert(`Connected to WiFi: ${WiFi_ssid}`);
 
             document.getElementById("wifi-modal").style.display = "none";
@@ -573,10 +573,10 @@
 
             if (device_connected) {
               await scanWiFi();
-              showToast(`Connected to WiFi: ${new_WiFi_ssid}`, 3500);
+              showToast(`Connected to WiFi: ${new_WiFi_ssid}`, 6500);
 
             } else {
-              showToast("Connected to WiFi, but device not responding", 3500);
+              showToast("Connected to WiFi, but device not responding", 6500);
             }
 
             closeWiFiModal();
@@ -587,7 +587,7 @@
 
 
 
-          if (msg === "wifi not connected") {
+          if (msg === "new wifi not connected - other reason") {
             document.getElementById("wifi-connect-btn").textContent = "Connect";
             document.getElementById("wifi-connect-btn").disabled = false;
             document.getElementById("new-wifi-cancel-btn").disabled = false;
@@ -615,13 +615,41 @@
             closeWiFiModal();
           }
 
+          if (msg === "new wifi not connected - wrong password") {
+            document.getElementById("wifi-connect-btn").textContent = "Connect";
+            document.getElementById("wifi-connect-btn").disabled = false;
+            document.getElementById("new-wifi-cancel-btn").disabled = false;
+            document.getElementById("new-wifi-cancel-btn").hidden = false;
+
+            showToast("Wrong password", 4000);
+
+            await sleep(4000);
+
+
+            while (!device_connected && attempts < 3) {
+              attempts++;
+              device_connected = await checkDeviceConnection(); // עכשיו זה מחכה עד שתשובה תגיע או timeout
+            }
+
+            if (device_connected) {
+              await scanWiFi();
+              showToast(`wifi reconnected back to WiFi : ${WiFi_ssid}`, 4500);
+
+            } else {
+
+              showToast("lost connnection, device not responding", 4500);
+            }
+
+
+          }
+
         }
 
         if (topic === "wifi_cred_list") {
           console.log("Clearing wifi_creds array");
           console.log("Received wifi_cred_list:", msg);
-          const ssidMatch = msg.match(/ssid:\s*(\S+)/);
-          const passMatch = msg.match(/pass:\s*(\S+)/);
+          const ssidMatch = msg.match(/ssid:\s*([^]+?)(?=\s*pass:|$)/);
+          const passMatch = msg.match(/pass:\s*(.*)$/);
 
           const ssid = ssidMatch ? ssidMatch[1] : null;
           const pass = passMatch ? passMatch[1] : null;
@@ -871,7 +899,20 @@
           btn.addEventListener("click", () => {
             const ssid = btn.getAttribute("data-ssid");
             document.getElementById("wifi-ssid").value = ssid;
-            document.getElementById("wifi-modal").style.display = "flex";
+            for (let i = 0; i < wifi_creds.length; i++) {
+              if (wifi_creds[i].ssid === ssid) {
+                document.getElementById("wifi-password").value = wifi_creds[i].pass;
+                document.getElementById("wifi-modal").style.display = "none";
+                btn.disabled = true;
+                btn.textContent = "Connecting...";
+                connectWiFi();
+                break;
+              } else {
+                document.getElementById("wifi-password").value = "";
+                document.getElementById("wifi-modal").style.display = "flex";
+              }
+            }
+
           });
         });
       }
@@ -914,7 +955,8 @@
           document.getElementById("wifi-connect-btn").disabled = false;
           document.getElementById("new-wifi-cancel-btn").hidden = true;
           closeWiFiModal();
-        }, 120000);
+          checkDeviceConnection();
+        }, 60000);
       }
 
       // עיבוד תוצאות הסריקה
