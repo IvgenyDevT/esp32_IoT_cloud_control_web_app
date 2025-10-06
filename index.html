@@ -354,7 +354,7 @@
           <div class="flex justify-end gap-2">
             <button onclick="closeWiFiModal()" id="new-wifi-cancel-btn"
               class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
-            <button onclick="connectWiFi()" id="wifi-connect-btn"
+            <button onclick="connectNewWifi()" id="wifi-connect-btn"
               class="px-4 py-2 bg-green-600 text-white rounded">Connect</button>
           </div>
         </div>
@@ -389,6 +389,7 @@
       let deviceConnected = false;
       let WiFi_ssid = "";
       let new_WiFi_ssid = "";
+      new_WiFi_pass = "";
       const broker = "wss://2a7e41fb3049421ba6af414adaf4f849.s1.eu.hivemq.cloud:8884/mqtt";
       const options = {
         username: "JekaDeGever",
@@ -399,6 +400,7 @@
 
       };
       let wifi_creds = [];
+
 
 
 
@@ -451,7 +453,7 @@
           document.getElementById("mqtt-status").textContent = "Connected";
           document.getElementById("mqtt-status").style.color = "green";
           updateGlobalIndicators();
-          MQTT_client.subscribe("Jeka");
+
           MQTT_client.subscribe("OTA_update_progress");
           MQTT_client.subscribe("scan_wifi_result");
           MQTT_client.subscribe("wifi_connection");
@@ -475,7 +477,11 @@
         });
 
 
-        MQTT_client.on("message", MQTT_messageHandler);
+        MQTT_client.removeAllListeners("message"); // נוודא שלא מצטבר כפול
+        MQTT_client.on("message", (topic, message) => {
+          console.log("[MQTT handler fired]", Date.now(), "topic:", topic, "msg:", message.toString());
+          MQTT_messageHandler(topic, message); // לקרוא לפונקציה המקורית שלך
+        });
 
       }
 
@@ -535,6 +541,7 @@
 
 
         if (topic === "scan_wifi_result") {
+          console.log("topic scan_wifi_result received");
           try {
             const networks = JSON.parse(message.toString());
             showWiFiNetworks(networks);
@@ -548,6 +555,7 @@
         if (topic === "wifi_connection_status") {
           let device_connected = false;
           let attempts = 0;
+          let wifi_creds_exist = false;
 
           clearTimeout(connectNewWifiTimeout);
 
@@ -563,6 +571,21 @@
             document.getElementById("wifi-connect-btn").disabled = false;
             document.getElementById("new-wifi-cancel-btn").disabled = false;
             document.getElementById("new-wifi-cancel-btn").hidden = false;
+
+            //in case of adding new wifi network, that still not exist in NVS memory, add it to the array to be able not 
+            //to ask for password next time
+
+            //check if the ssid already exist in the array
+            for (let i = 0; i < wifi_creds.length; i++) {
+              if (wifi_creds[i].ssid === new_WiFi_ssid) {
+                wifi_creds_exist = true;
+                break;
+              }
+            }
+
+            if (!wifi_creds_exist) {
+              wifi_creds.push({ ssid: new_WiFi_ssid, pass: new_WiFi_pass });
+            }
 
 
 
@@ -621,6 +644,7 @@
             document.getElementById("new-wifi-cancel-btn").disabled = false;
             document.getElementById("new-wifi-cancel-btn").hidden = false;
 
+
             showToast("Wrong password", 4000);
 
             await sleep(4000);
@@ -646,7 +670,7 @@
         }
 
         if (topic === "wifi_cred_list") {
-          console.log("Clearing wifi_creds array");
+
           console.log("Received wifi_cred_list:", msg);
           const ssidMatch = msg.match(/ssid:\s*([^]+?)(?=\s*pass:|$)/);
           const passMatch = msg.match(/pass:\s*(.*)$/);
@@ -658,6 +682,7 @@
           console.log("PASS:", pass); // 123
 
           wifi_creds.push({ ssid: ssid, pass: pass });
+
         }
       }
 
@@ -720,6 +745,7 @@
             updateGlobalIndicators();
             resolve(deviceConnected);
             window.resumeWait = null; // נקה כדי שלא יקרה שוב בטעות
+            wifi_creds = []; // נקה את הרשימה הקודמת
           };
 
           // Timeout fallback – אם לא התקבלה תשובה
@@ -845,6 +871,7 @@
           alert("device not connected");
           return;
         }
+        console.log("scanWiFi called");
         document.getElementById("wifi-list").innerHTML = `
         <div class="flex items-center gap-2 text-gray-600">
           <span>Scanning...</span>
@@ -869,6 +896,7 @@
 
 
       function showWiFiNetworks(list) {
+        console.log("showWiFiNetworks called");
         const container = document.getElementById("wifi-list");
         container.innerHTML = "";
         list.forEach(net => {
@@ -896,16 +924,21 @@
         });
 
         document.querySelectorAll(".connect-btn").forEach(btn => {
+
           btn.addEventListener("click", () => {
+
             const ssid = btn.getAttribute("data-ssid");
             document.getElementById("wifi-ssid").value = ssid;
+
             for (let i = 0; i < wifi_creds.length; i++) {
+
               if (wifi_creds[i].ssid === ssid) {
+
                 document.getElementById("wifi-password").value = wifi_creds[i].pass;
                 document.getElementById("wifi-modal").style.display = "none";
                 btn.disabled = true;
                 btn.textContent = "Connecting...";
-                connectWiFi();
+                connectNewWifi();
                 break;
               } else {
                 document.getElementById("wifi-password").value = "";
@@ -935,7 +968,7 @@
 
       let connectNewWifiTimeout = null;
 
-      function connectWiFi() {
+      function connectNewWifi() {
         const ssid = document.getElementById("wifi-ssid").value.trim();
         const pass = document.getElementById("wifi-password").value.trim();
         if (!ssid) return alert("SSID required");
@@ -947,6 +980,7 @@
 
         MQTT_client.publish("connect_new_wifi", ssid + "|" + pass);
         new_WiFi_ssid = ssid;
+        new_WiFi_pass = pass;
 
 
         connectNewWifiTimeout = setTimeout(() => {
@@ -996,7 +1030,7 @@
         ["Yellow", "Red", "Green"].forEach(color => {
           document.getElementById(color).addEventListener("change", e => {
             if (MQTT_client && MQTT_client.connected && deviceConnected) {
-              MQTT_client.publish("Jeka", `${color.toLowerCase()} led ${e.target.checked ? "on" : "off"}`);
+              MQTT_client.publish("leds_toggle", `${color.toLowerCase()} led ${e.target.checked ? "on" : "off"}`);
             } else {
               e.target.checked = !e.target.checked;
               alert("MQTT + Device must be connected");
