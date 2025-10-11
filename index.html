@@ -457,7 +457,7 @@
           MQTT_client.subscribe("OTA_update_progress");
           MQTT_client.subscribe("scan_wifi_result");
           MQTT_client.subscribe("wifi_connection");
-          MQTT_client.subscribe("device_connection_info");
+          MQTT_client.subscribe("device_connection_status");
           MQTT_client.subscribe("wifi_connection_status");
           MQTT_client.subscribe("wifi_cred_list");
 
@@ -516,7 +516,13 @@
         }
 
 
-        if (topic === "device_connection_info") {
+        if (topic === "device_connection_status") {
+
+          if (msg === "status changed") {
+            checkDeviceConnection();
+            return;
+          }
+
           const fields = ["Device Name:", "Firmware:", "WiFi SSID:", "IP Address:", "MAC Address:", "RSSI:"];
           fields.forEach(label => {
             if (msg.startsWith(label)) {
@@ -725,7 +731,7 @@
           updateGlobalIndicators();
 
           // שלח בקשה
-          MQTT_client.publish("Get_device_connection", "check_connection");
+          MQTT_client.publish("Get_device_connection_status", "check_connection");
 
           // שמור resolver גלובלי — ישוחרר מ־MQTT handler
           window.resumeWait = (success) => {
