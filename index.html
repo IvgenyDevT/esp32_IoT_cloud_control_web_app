@@ -20,6 +20,53 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
+      /* ========== IvgenyDevT Signature Watermark ========== */
+      #ivgeny-watermark {
+        position: fixed;
+        top: 42%;
+        /* טיפה מעל המרכז */
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3.6rem;
+        /* גדול ובולט */
+        font-weight: 600;
+        color: rgba(0, 0, 0, 0.18);
+        /* שקיפות עדינה */
+        text-align: center;
+        font-family: 'Segoe UI', sans-serif;
+        pointer-events: none;
+        z-index: 9999;
+        user-select: none;
+        letter-spacing: 2px;
+        text-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        animation: watermarkFade 6s ease-in-out infinite;
+        /* אנימציה רציפה */
+      }
+
+      /* אנימציה של "נשימה" — הופך את הטקסט לשקוף וחוזר */
+      @keyframes watermarkFade {
+
+        0%,
+        100% {
+          opacity: 0.25;
+          text-shadow: 0 0 15px rgba(0, 0, 0, 0.25);
+        }
+
+        50% {
+          opacity: 0.6;
+          text-shadow: 0 0 25px rgba(0, 0, 0, 0.35);
+        }
+      }
+
+      /* תצוגה מותאמת למובייל */
+      @media (max-width: 768px) {
+        #ivgeny-watermark {
+          font-size: 2rem;
+          top: 45%;
+        }
+      }
+
+
       .status-indicator {
         width: 12px;
         height: 12px;
@@ -28,6 +75,7 @@
         display: inline-block;
         margin-left: 6px;
       }
+
 
       .modal {
         position: fixed;
@@ -1045,6 +1093,11 @@
         });
       });
     </script>
+
+    <!-- ===== Watermark / Developer Signature ===== -->
+    <div id="ivgeny-watermark">
+      Designed and developed by <strong>IvgenyDevT</strong>
+    </div>
   </body>
 
 </html>
