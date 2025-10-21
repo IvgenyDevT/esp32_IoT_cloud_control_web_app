@@ -5,6 +5,11 @@
     <!-- manifest -->
     <link rel="manifest" href="manifest.json">
 
+
+    <link rel="stylesheet" href="/style.css">
+    <script src="/script.js" defer></script>
+
+
     <!-- צבע מסגרת למעלה (status bar / theme bar) -->
     <meta name="theme-color" content="#2196f3">
 
@@ -19,58 +24,7 @@
     <title>ESP32 Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <style>
-      .status-indicator {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background-color: red;
-        display: inline-block;
-        margin-left: 6px;
-      }
 
-
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 50;
-      }
-
-      .modal-content {
-        background-color: white;
-        padding: 20px;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 400px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      }
-
-      .toast {
-        position: fixed;
-        bottom: 60px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-size: 16px;
-        z-index: 9999;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .toast.show {
-        opacity: 1;
-      }
-    </style>
   </head>
 
   <body class="bg-gray-100">
@@ -85,7 +39,7 @@
 
       <!-- מרכז הכותרת + קרדיט -->
       <div class="flex flex-col items-center">
-        <h1 class="text-xl text-gray-600 font-bold">ESP32 Dashboard</h1>
+        <h1 class="text-2xl mb-2 text-gray-600 font-bold">ESP32 Dashboard</h1>
         <p class="text-sm text-gray-400 italic -mt-1">
           Designed and developed by <span class="font-semibold text-gray-500">IvgenyDevT</span>
         </p>
@@ -111,7 +65,7 @@
       class="fixed top-0 left-0 w-64 h-full bg-white shadow-lg transform -translate-x-full transition-transform duration-300 z-40">
       <div class="p-6 font-bold text-2xl">ESP32</div>
       <nav class="px-4 space-y-2">
-        <button onclick="showSection('home')"
+        <button onclick="App.showSection('home')"
           class="w-full flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
           <!-- Home SVG -->
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -122,7 +76,7 @@
           Home
         </button>
 
-        <button onclick="showSection('leds')"
+        <button onclick="App.showSection('leds')"
           class="w-full flex items-center gap-3 px-4 py-2 rounded-lg  bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
           <!-- LEDs SVG -->
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -133,7 +87,7 @@
           LEDs
         </button>
 
-        <button onclick="showSection('ota')"
+        <button onclick="App.showSection('ota')"
           class="w-full flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
           <!-- OTA SVG -->
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -145,7 +99,7 @@
         </button>
 
 
-        <button onclick="showSection('LCD')"
+        <button onclick="App.showSection('LCD')"
           class="w-full flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
             stroke="currentColor" class="size-6">
@@ -155,7 +109,7 @@
           LCD
         </button>
 
-        <button onclick="showSection('WiFi scan')"
+        <button onclick="App.showSection('WiFi scan')"
           class="w-full flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-200 text-gray-700 font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
             stroke="currentColor" class="size-6">
@@ -181,7 +135,7 @@
         <h2 class="text-2xl  mb-2 text-gray-800 gap-1 space-y-1">MQTT Connection</h2>
 
         <div class="flex items-center gap-4 mb-10 mt-4">
-          <button onclick="connectMQTT()" id="connect-btn"
+          <button onclick="App.connectMQTT()" id="connect-btn"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow flex items-center gap-1">
             Connect MQTT
             <svg id="connect-btn-svg" class="hidden w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -199,7 +153,7 @@
         <h2 class="text-2xl  mb-3 text-gray-800">IoT device Connection</h2>
 
         <div class="flex items-center gap-4 mb-6">
-          <button onclick="checkDeviceConnection()"
+          <button onclick="App.checkDeviceConnection()"
             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow flex items-center gap-2">
             Check Device Connection
             <svg id="check-esp-con-btn-svg" class="hidden w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg"
@@ -290,7 +244,8 @@
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </label>
 
-        <button onclick="sendLCDText()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow">
+        <button onclick="App.sendLCDText()"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow">
           Display on LCD
         </button>
       </section>
@@ -302,7 +257,7 @@
 
           <div class="flex items-center justify-between gap-3">
             <!-- Start OTA Button -->
-            <button onclick="startOTA()"
+            <button onclick="App.startOTA()"
               class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 transition">
               Start OTA
             </button>
@@ -341,7 +296,8 @@
       <!-- ====================== WiFi Scan page ============================================== -->
       <section id="WiFi scan" class="section hidden">
         <h2 class="text-xl font-bold text-gray-600 mb-4 mt-4">WiFi Networks</h2>
-        <button onclick="scanWiFi()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow mb-6">
+        <button onclick="App.scanWiFi()"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow mb-6">
           Scan WiFi
         </button>
         <div id="wifi-list" class="flex flex-col gap-4"></div>
@@ -360,9 +316,9 @@
             <input type="password" id="wifi-password" class="w-full border rounded px-2 py-1">
           </label>
           <div class="flex justify-end gap-2">
-            <button onclick="closeWiFiModal()" id="new-wifi-cancel-btn"
+            <button onclick="App.closeWiFiModal()" id="new-wifi-cancel-btn"
               class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
-            <button onclick="connectNewWifi()" id="wifi-connect-btn"
+            <button onclick="App.connectNewWifi()" id="wifi-connect-btn"
               class="px-4 py-2 bg-green-600 text-white rounded">Connect</button>
           </div>
         </div>
@@ -370,689 +326,7 @@
       </section>
     </main>
 
-    <!-- ====================================== JAVA SCRIPT ========================================================= -->
-    <script>
-      const sidebar = document.getElementById("sidebar");
-      const overlay = document.getElementById("overlay");
-      const menuBtn = document.getElementById("menu-btn");
 
-      menuBtn.addEventListener("click", () => {
-        sidebar.classList.toggle("-translate-x-full");
-        overlay.classList.toggle("hidden");
-      });
-      overlay.addEventListener("click", () => {
-        sidebar.classList.add("-translate-x-full");
-        overlay.classList.add("hidden");
-      });
-
-      function showSection(id) {
-        document.querySelectorAll(".section").forEach(s => s.classList.add("hidden"));
-        document.getElementById(id).classList.remove("hidden");
-        sidebar.classList.add("-translate-x-full");
-        overlay.classList.add("hidden");
-      }
-      showSection("home");
-
-      let MQTT_client = null;
-      let deviceConnected = false;
-      let WiFi_ssid = "";
-      let new_WiFi_ssid = "";
-      new_WiFi_pass = "";
-      const broker = "wss://2a7e41fb3049421ba6af414adaf4f849.s1.eu.hivemq.cloud:8884/mqtt";
-      const options = {
-        username: "JekaDeGever",
-        password: "J1qwe321",
-        clean: true,
-        connectTimeout: 5000,
-        reconnectPeriod: 4000,
-
-      };
-      let wifi_creds = [];
-
-
-
-
-
-      function updateGlobalIndicators() {
-        const mqttStatus = document.getElementById("mqtt-status").textContent;
-        document.getElementById("global-mqtt-status").textContent = mqttStatus;
-        document.getElementById("global-mqtt-status").style.color =
-          document.getElementById("mqtt-status").style.color;
-        document.getElementById("global-mqtt-indicator").style.backgroundColor =
-          document.getElementById("status-indicator").style.backgroundColor;
-
-        const deviceStatus = document.getElementById("device-status").textContent;
-        document.getElementById("global-device-status").textContent = deviceStatus;
-        document.getElementById("global-device-status").style.color =
-          document.getElementById("device-status").style.color;
-        document.getElementById("global-device-indicator").style.backgroundColor =
-          document.getElementById("device-indicator").style.backgroundColor;
-      }
-
-
-
-
-
-
-
-      function connectMQTT() {
-        if (MQTT_client && MQTT_client.connected) return;
-        document.getElementById("status-indicator").style.backgroundColor = "yellow";
-        document.getElementById("mqtt-status").textContent = "Connecting...";
-        document.getElementById("connect-btn-svg").classList.remove("hidden");
-        document.getElementById("mqtt-status").style.color = "black";
-
-        updateGlobalIndicators();
-        MQTT_client = mqtt.connect(broker, options);
-
-        let MQTT_Connect_timeout = setTimeout(() => {
-          alert("failed to connect MQTT service");
-          document.getElementById("connect-btn-svg").classList.add("hidden");
-          document.getElementById("status-indicator").style.backgroundColor = "red";
-          document.getElementById("mqtt-status").textContent = "Not connected";
-          document.getElementById("mqtt-status").style.color = "red";
-          updateGlobalIndicators();
-        }, 15000);
-
-        MQTT_client.on("connect", () => {
-          clearTimeout(MQTT_Connect_timeout);
-          document.getElementById("connect-btn-svg").classList.add("hidden");
-          document.getElementById("status-indicator").style.backgroundColor = "green";
-          document.getElementById("mqtt-status").textContent = "Connected";
-          document.getElementById("mqtt-status").style.color = "green";
-          updateGlobalIndicators();
-
-          MQTT_client.subscribe("OTA_update_progress");
-          MQTT_client.subscribe("scan_wifi_result");
-          MQTT_client.subscribe("wifi_connection");
-          MQTT_client.subscribe("device_connection_status");
-          MQTT_client.subscribe("wifi_connection_status");
-          MQTT_client.subscribe("wifi_cred_list");
-
-
-
-
-        });
-
-        MQTT_client.on("error", () => {
-          clearTimeout(MQTT_Connect_timeout);
-          alert("failed to connect MQTT service");
-          document.getElementById("connect-btn-svg").classList.add("hidden");
-          document.getElementById("status-indicator").style.backgroundColor = "red";
-          document.getElementById("mqtt-status").textContent = "Not connected";
-          document.getElementById("mqtt-status").style.color = "red";
-          updateGlobalIndicators();
-        });
-
-
-        MQTT_client.removeAllListeners("message"); // נוודא שלא מצטבר כפול
-        MQTT_client.on("message", (topic, message) => {
-          console.log("[MQTT handler fired]", Date.now(), "topic:", topic, "msg:", message.toString());
-          MQTT_messageHandler(topic, message); // לקרוא לפונקציה המקורית שלך
-        });
-
-      }
-
-
-
-
-
-      async function MQTT_messageHandler(topic, message) {
-        const msg = message.toString();
-
-        console.log(`Received message on topic ${topic}: ${msg}`);
-
-
-        if (topic === "OTA_update_progress") {
-          if (msg.includes("Progress")) {
-            document.getElementById("ota-status").textContent = "OTA Status: installing new firmware ...";
-          }
-          else
-            document.getElementById("ota-status").textContent = "OTA Status: " + msg;
-
-          const match = msg.match(/(\d+)%/);
-
-          if (match) {
-            const val = parseInt(match[1]);
-            document.getElementById("ota-progress").value = val;
-            document.getElementById("ota-percent").textContent = val + "%";
-          }
-
-          if (msg.includes("restarting")) {
-            checkDeviceConnection();
-          }
-        }
-
-
-        if (topic === "device_connection_status") {
-
-          if (msg === "status changed") {
-            checkDeviceConnection();
-            return;
-          }
-
-          const fields = ["Device Name:", "Firmware:", "WiFi SSID:", "IP Address:", "MAC Address:", "RSSI:"];
-          fields.forEach(label => {
-            if (msg.startsWith(label)) {
-              const container = document.getElementById(label);
-              if (container) {
-                const value = msg.replace(label, "").trim();
-
-                if (label === "WiFi SSID:") {
-                  WiFi_ssid = value;
-                }
-                container.innerHTML = `${label} <span class="text-gray-900 font-medium">${value}</span>`;
-              }
-            }
-          });
-
-          // ברגע שהגיע מידע — שחרר את ההמתנה
-          if (window.resumeWait) {
-            window.resumeWait(true);
-          }
-        }
-
-
-
-        if (topic === "scan_wifi_result") {
-          console.log("topic scan_wifi_result received");
-          try {
-            const networks = JSON.parse(message.toString());
-            showWiFiNetworks(networks);
-          } catch (e) {
-            console.error("Invalid WiFi scan data", e);
-          }
-        }
-
-
-
-        if (topic === "wifi_connection_status") {
-          let device_connected = false;
-          let attempts = 0;
-          let wifi_creds_exist = false;
-
-          clearTimeout(connectNewWifiTimeout);
-
-          document.getElementById("wifi-connect-btn").disabled = false;
-
-          if (msg === "new wifi connected") {
-            //alert(`Connected to WiFi: ${WiFi_ssid}`);
-
-            document.getElementById("wifi-modal").style.display = "none";
-            document.getElementById("wifi-ssid").value = "";
-            document.getElementById("wifi-password").value = "";
-            document.getElementById("wifi-connect-btn").textContent = "Connect";
-            document.getElementById("wifi-connect-btn").disabled = false;
-            document.getElementById("new-wifi-cancel-btn").disabled = false;
-            document.getElementById("new-wifi-cancel-btn").hidden = false;
-
-            //in case of adding new wifi network, that still not exist in NVS memory, add it to the array to be able not 
-            //to ask for password next time
-
-            //check if the ssid already exist in the array
-            for (let i = 0; i < wifi_creds.length; i++) {
-              if (wifi_creds[i].ssid === new_WiFi_ssid) {
-                wifi_creds_exist = true;
-                break;
-              }
-            }
-
-            if (!wifi_creds_exist) {
-              wifi_creds.push({ ssid: new_WiFi_ssid, pass: new_WiFi_pass });
-            }
-
-
-
-            while (!device_connected && attempts < 3) {
-              attempts++;
-              device_connected = await checkDeviceConnection(); // עכשיו זה מחכה עד שתשובה תגיע או timeout
-            }
-
-            if (device_connected) {
-              await scanWiFi();
-              showToast(`Connected to WiFi: ${new_WiFi_ssid}`, 6500);
-
-            } else {
-              showToast("Connected to WiFi, but device not responding", 6500);
-            }
-
-            closeWiFiModal();
-
-
-          }
-
-
-
-
-          if (msg === "new wifi not connected - other reason") {
-            document.getElementById("wifi-connect-btn").textContent = "Connect";
-            document.getElementById("wifi-connect-btn").disabled = false;
-            document.getElementById("new-wifi-cancel-btn").disabled = false;
-            document.getElementById("new-wifi-cancel-btn").hidden = false;
-
-            showToast(`failed to connect to WiFi: ${new_WiFi_ssid}`, 3000);
-
-            await sleep(3000);
-
-
-            while (!device_connected && attempts < 3) {
-              attempts++;
-              device_connected = await checkDeviceConnection(); // עכשיו זה מחכה עד שתשובה תגיע או timeout
-            }
-
-            if (device_connected) {
-              await scanWiFi();
-              showToast(`wifi reconnected back to WiFi : ${WiFi_ssid}`, 4500);
-
-            } else {
-
-              showToast("lost connnection, device not responding", 4500);
-            }
-
-            closeWiFiModal();
-          }
-
-          if (msg === "new wifi not connected - wrong password") {
-            document.getElementById("wifi-connect-btn").textContent = "Connect";
-            document.getElementById("wifi-connect-btn").disabled = false;
-            document.getElementById("new-wifi-cancel-btn").disabled = false;
-            document.getElementById("new-wifi-cancel-btn").hidden = false;
-
-
-            showToast("Wrong password", 4000);
-
-            await sleep(4000);
-
-
-            while (!device_connected && attempts < 3) {
-              attempts++;
-              device_connected = await checkDeviceConnection(); // עכשיו זה מחכה עד שתשובה תגיע או timeout
-            }
-
-            if (device_connected) {
-              await scanWiFi();
-              showToast(`wifi reconnected back to WiFi : ${WiFi_ssid}`, 4500);
-
-            } else {
-
-              showToast("lost connnection, device not responding", 4500);
-            }
-
-
-          }
-
-        }
-
-        if (topic === "wifi_cred_list") {
-
-          console.log("Received wifi_cred_list:", msg);
-          const ssidMatch = msg.match(/ssid:\s*([^]+?)(?=\s*pass:|$)/);
-          const passMatch = msg.match(/pass:\s*(.*)$/);
-
-          const ssid = ssidMatch ? ssidMatch[1] : null;
-          const pass = passMatch ? passMatch[1] : null;
-
-          console.log("SSID:", ssid); // jenya
-          console.log("PASS:", pass); // 123
-
-          wifi_creds.push({ ssid: ssid, pass: pass });
-
-        }
-      }
-
-
-
-      function showToast(message, duration = 2000) {
-        const toast = document.createElement("div");
-        toast.className = "toast";
-        toast.textContent = message;
-        document.body.appendChild(toast);
-
-        // הפעלה של האנימציה
-        setTimeout(() => toast.classList.add("show"), 50);
-
-        // הסרה אחרי זמן נתון
-        setTimeout(() => {
-          toast.classList.remove("show");
-          setTimeout(() => document.body.removeChild(toast), 300);
-        }, duration);
-      }
-
-
-
-
-
-
-      function checkDeviceConnection() {
-        return new Promise((resolve) => {
-          if (!MQTT_client || !MQTT_client.connected) {
-            alert("MQTT not connected");
-            deviceConnected = false;
-            return resolve(false);
-          }
-
-          // הצג אינדיקציה של "בודק..."
-          document.getElementById("check-esp-con-btn-svg").classList.remove("hidden");
-          document.getElementById("device-status").textContent = "Checking...";
-          document.getElementById("device-indicator").style.backgroundColor = "yellow";
-          document.querySelectorAll("#device-info span").forEach(s => s.textContent = "---");
-          updateGlobalIndicators();
-
-          // שלח בקשה
-          MQTT_client.publish("Get_device_connection_status", "check_connection");
-
-          // שמור resolver גלובלי — ישוחרר מ־MQTT handler
-          window.resumeWait = (success) => {
-            if (success) {
-              document.getElementById("device-status").textContent = "Connected";
-              document.getElementById("device-status").style.color = "green";
-              document.getElementById("device-indicator").style.backgroundColor = "green";
-              document.getElementById("check-esp-con-btn-svg").classList.add("hidden");
-              deviceConnected = true;
-            } else {
-              document.getElementById("device-status").textContent = "Device not found";
-              document.getElementById("device-indicator").style.backgroundColor = "red";
-              document.getElementById("device-status").style.color = "red";
-              document.getElementById("check-esp-con-btn-svg").classList.add("hidden");
-              deviceConnected = false;
-            }
-            updateGlobalIndicators();
-            resolve(deviceConnected);
-            window.resumeWait = null; // נקה כדי שלא יקרה שוב בטעות
-            wifi_creds = []; // נקה את הרשימה הקודמת
-          };
-
-          // Timeout fallback – אם לא התקבלה תשובה
-          setTimeout(() => {
-            if (window.resumeWait) {
-              window.resumeWait(false);
-            }
-          }, 5000);
-        });
-      }
-
-
-
-
-
-
-
-
-
-
-
-      async function startOTA() {
-
-        if (!MQTT_client || !MQTT_client.connected) {
-          alert("MQTT must be connected");
-          document.getElementById("ota-status").textContent =
-            "OTA Status: Not connected (MQTT + Device required)";
-          return;
-        }
-        await checkDeviceConnection();
-
-        if (!deviceConnected) {
-          alert("Cannot start OTA: Device not connected");
-          document.getElementById("ota-status").textContent =
-            "Device not connected";
-          return;
-        }
-        const selected = document.getElementById("firmware-selected");
-        const url = selected.getAttribute("data-url");
-        if (!url) {
-          alert("Please select firmware version first!");
-          return;
-        }
-        document.getElementById("ota-status").textContent = "OTA Status: Triggered";
-        document.getElementById("ota-progress").value = 0;
-        document.getElementById("ota-percent").textContent = "0%";
-        MQTT_client.publish("OTA_update", url);
-      }
-
-
-
-
-
-
-
-
-
-
-
-
-      async function loadFirmwareList() {
-        const url = "https://api.github.com/repos/ivgenydevt/esp32_dashboard_proj/contents/firmware";
-        const res = await fetch(url);
-        const files = await res.json();
-
-        const menu = document.querySelector("#firmware-menu .py-1");
-        menu.innerHTML = "";
-
-        files.forEach(file => {
-          if (file.name.endsWith(".bin")) {
-            const a = document.createElement("a");
-            a.href = "#";
-            a.textContent = file.name;
-            a.className = "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100";
-            a.setAttribute("data-url", `https://ivgenydevt.github.io/esp32_dashboard_proj/firmware/${file.name}`);
-            a.addEventListener("click", e => {
-              e.preventDefault();
-              document.getElementById("firmware-selected").textContent = file.name;
-              document.getElementById("firmware-selected").setAttribute("data-url", a.getAttribute("data-url"));
-              document.getElementById("firmware-menu").classList.add("hidden");
-            });
-            menu.appendChild(a);
-          }
-        });
-      }
-
-
-
-
-
-
-
-
-
-
-      function sendLCDText() {
-        const text = document.getElementById("lcd-text").value.trim();
-        if (!text) {
-          alert("Please enter text for LCD");
-          return;
-        }
-        if (!MQTT_client || !MQTT_client.connected || !deviceConnected) {
-          alert("MQTT + Device must be connected");
-          return;
-        }
-        MQTT_client.publish("LCD_display", `${text}`);
-        document.getElementById("lcd-text").value = "";
-      }
-
-
-
-
-
-
-
-      // ==================== WiFi Scan logic =========================
-      function scanWiFi() {
-        if (!MQTT_client || !MQTT_client.connected) {
-          alert("MQTT must be connected");
-          return;
-        }
-        if (!deviceConnected) {
-          alert("device not connected");
-          return;
-        }
-        console.log("scanWiFi called");
-        document.getElementById("wifi-list").innerHTML = `
-        <div class="flex items-center gap-2 text-gray-600">
-          <span>Scanning...</span>
-         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class=" animate-ping size-4">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
-              </svg>
-        </div>
-      `;
-
-        MQTT_client.publish("scan_wifi_nets", "NULLarg");
-        console.log("log should be here");
-        for (let i = 0; i < wifi_creds.length; i++) {
-          console.log("ssid: " + wifi_creds[i].ssid + " pass: " + wifi_creds[i].pass);
-        }
-      }
-
-
-
-
-
-
-
-
-      function showWiFiNetworks(list) {
-        console.log("showWiFiNetworks called");
-        const container = document.getElementById("wifi-list");
-        container.innerHTML = "";
-        list.forEach(net => {
-          const div = document.createElement("div");
-          div.className = "p-3 bg-white rounded-lg shadow flex justify-between items-center";
-          div.innerHTML = `
-          <span>${net.ssid} (${net.rssi} dBm)</span>
-          <button class=  "px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded connect-btn" data-ssid="${net.ssid}">
-            Connect
-          </button>
-        `;
-
-
-          const btn = div.querySelector("button");
-          if (net.ssid === WiFi_ssid) {
-            //div.style.fontWeight = "bold";
-            div.style.backgroundColor = "#e0f7fa";
-            btn.disabled = true;
-            btn.textContent = "Connected";
-            btn.classList.remove("bg-indigo-600", "hover:bg-indigo-500");
-            btn.classList.add("bg-green-400", "cursor-not-allowed");
-
-          }
-          container.appendChild(div);
-        });
-
-        document.querySelectorAll(".connect-btn").forEach(btn => {
-
-          btn.addEventListener("click", () => {
-
-            const ssid = btn.getAttribute("data-ssid");
-            document.getElementById("wifi-ssid").value = ssid;
-
-            for (let i = 0; i < wifi_creds.length; i++) {
-
-              if (wifi_creds[i].ssid === ssid) {
-
-                document.getElementById("wifi-password").value = wifi_creds[i].pass;
-                document.getElementById("wifi-modal").style.display = "none";
-                btn.disabled = true;
-                btn.textContent = "Connecting...";
-                connectNewWifi();
-                break;
-              } else {
-                document.getElementById("wifi-password").value = "";
-                document.getElementById("wifi-modal").style.display = "flex";
-              }
-            }
-
-          });
-        });
-      }
-
-
-
-
-
-
-
-
-      function closeWiFiModal() {
-        document.getElementById("wifi-modal").style.display = "none";
-      }
-
-
-
-
-
-
-      let connectNewWifiTimeout = null;
-
-      function connectNewWifi() {
-        const ssid = document.getElementById("wifi-ssid").value.trim();
-        const pass = document.getElementById("wifi-password").value.trim();
-        if (!ssid) return alert("SSID required");
-
-        document.getElementById("wifi-connect-btn").textContent = "Connecting...";
-        document.getElementById("wifi-connect-btn").disabled = true;
-        document.getElementById("new-wifi-cancel-btn").disabled = true;
-        document.getElementById("new-wifi-cancel-btn").style.backgroundColor = "gray";
-
-        MQTT_client.publish("connect_new_wifi", ssid + "|" + pass);
-        new_WiFi_ssid = ssid;
-        new_WiFi_pass = pass;
-
-
-        connectNewWifiTimeout = setTimeout(() => {
-          showToast("Connection failed (timeout)", 3500);
-          document.getElementById("wifi-connect-btn").textContent = "Connect";
-          document.getElementById("wifi-connect-btn").disabled = false;
-          document.getElementById("new-wifi-cancel-btn").hidden = true;
-          closeWiFiModal();
-          checkDeviceConnection();
-        }, 60000);
-      }
-
-      // עיבוד תוצאות הסריקה
-
-
-
-      function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-      }
-
-      // דוגמה לשימוש
-      async function demo() {
-        console.log("Start");
-        await sleep(2000);  // מחכה 2 שניות
-        console.log("After 2 seconds");
-      }
-
-
-
-
-
-
-      // dropdown toggle
-      document.addEventListener("DOMContentLoaded", () => {
-        loadFirmwareList();
-
-        const button = document.getElementById("firmware-button");
-        const menu = document.getElementById("firmware-menu");
-        button.addEventListener("click", () => {
-          menu.classList.toggle("hidden");
-        });
-
-
-
-
-
-        ["Yellow", "Red", "Green"].forEach(color => {
-          document.getElementById(color).addEventListener("change", e => {
-            if (MQTT_client && MQTT_client.connected && deviceConnected) {
-              MQTT_client.publish("leds_toggle", `${color.toLowerCase()} led ${e.target.checked ? "on" : "off"}`);
-            } else {
-              e.target.checked = !e.target.checked;
-              alert("MQTT + Device must be connected");
-            }
-          });
-        });
-      });
-    </script>
 
 
   </body>
