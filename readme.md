@@ -54,10 +54,10 @@ ESP32-S2 Custom IoT Gateway
 
 
 The web dashboard communicates with the device via MQTT topics:
-	•	Each button click on the dashboard publishes a message to a predefined topic.
-	•	The ESP32 receives the message, executes the command (e.g., display text, toggle LED, start OTA).
-	•	The ESP32 then publishes an acknowledgment or status update to a response topic.
-	•	The dashboard listens and updates the UI accordingly.
+- Each button click on the dashboard publishes a message to a predefined topic.
+- The ESP32 receives the message, executes the command (e.g., display text, toggle LED, start OTA).
+- The ESP32 then publishes an acknowledgment or status update to a response topic.
+- The dashboard listens and updates the UI accordingly.
 
 ⸻
 
@@ -80,7 +80,6 @@ The web dashboard communicates with the device via MQTT topics:
 ### 🏠 Dashboard Pages & Controls
 
 Below is a detailed breakdown of each page, its functionality, and user interaction flow.
-(Add screenshots later in the indicated areas.)
 
 
 
@@ -91,27 +90,30 @@ Purpose:
 Main overview of the system’s state and connection.
 
 Controls:
-	•	Connect MQTT
+- Connect MQTT
 Establishes a connection between the web dashboard and the cloud MQTT broker.
 The client performs a secure WSS handshake, initializes subscriptions, and waits for incoming messages.
-	•	Check Device Connection
+
+- Check Device Connection
 Manually triggers a status check with the IoT device via MQTT.
 The ESP32 replies with info like device name, firmware version, SSID, IP, MAC, and RSSI.
 
 ⚙️ Automatic Behavior:
-	•	When the device powers on and connects to MQTT, its status automatically turns Online.
-	•	When it goes offline, the dashboard instantly switches to Offline.
-	•	The manual check button remains available to verify connectivity or refresh live metrics (like RSSI) without restarting.
+- When the device powers on and connects to MQTT, its status automatically turns Online.
+
+- When it goes offline, the dashboard instantly switches to Offline.
+
+- The manual check button remains available to verify connectivity or refresh live metrics (like RSSI) without restarting.
 
 Displayed Info:
-	•	Device name
-	•	Firmware version
-	•	Wi-Fi SSID
-	•	IP address
-	•	MAC address
-	•	RSSI (signal strength)
+- Device name
+- Firmware version
+- Wi-Fi SSID
+- IP address
+- MAC address
+- RSSI (signal strength)
 
-📸 Example Screenshot Placeholder
+📸 Example ![Main screen before connection established](images/Main-screen-not-connected.PNG)
 
 ⸻
 
@@ -122,9 +124,12 @@ Purpose:
 Control three physical LEDs on the ESP32 board.
 
 Controls:
-	•	Yellow LED
-	•	Red LED
-	•	Green LED
+
+- Yellow LED
+
+- Red LED
+
+- Green LED
 
 Each toggle sends an MQTT message such as:
 ``` bash
@@ -144,8 +149,9 @@ Purpose:
 Send text strings from the dashboard to be shown on the device’s LCD.
 
 Controls:
-	•	Input field — enter any text (max supported by your LCD).
-	•	Display on LCD button — publishes an MQTT message with the text.
+- Input field — enter any text (max supported by your LCD).
+
+- Display on LCD button — publishes an MQTT message with the text.
 
 The ESP32 receives it and updates the LCD instantly.
 
@@ -160,21 +166,21 @@ Purpose:
 Manage the device’s Wi-Fi connections, scan nearby networks, and switch access points.
 
 Controls:
-	•	Scan Wi-Fi button
+- Scan Wi-Fi button
 Triggers a scan request via MQTT → The ESP32 scans nearby networks → The dashboard displays results dynamically.
-	•	Connect button next to each network:
-	•	If the network is saved in memory, it connects automatically.
-	•	If it’s a new network, a modal popup appears for entering the password.
+- Connect button next to each network:
+- If the network is saved in memory, it connects automatically.
+- If it’s a new network, a modal popup appears for entering the password.
 📸 Example Screenshot Placeholder (Wi-Fi Password Modal)
 
 After successful connection:
-	•	The new SSID is saved to NVS Flash, meaning the device will remember it and automatically reconnect after reboot.
-	•	Multiple networks can be stored — the device will always connect to the strongest available on boot.
-	•	During switching, the device temporarily disconnects before joining the new network.
+- The new SSID is saved to NVS Flash, meaning the device will remember it and automatically reconnect after reboot.
+- Multiple networks can be stored — the device will always connect to the strongest available on boot.
+- During switching, the device temporarily disconnects before joining the new network.
 
 If the password is incorrect or the connection fails:
-	•	The device reconnects to the previous network.
-	•	The invalid credentials are not saved.
+- The device reconnects to the previous network.
+- The invalid credentials are not saved.
 
 📸 Example Screenshot Placeholder (Wi-Fi Networks List)
 
@@ -217,21 +223,21 @@ During the update:
 
 
 ### 🛠️ Tech Stack
-	•	Frontend: HTML5, CSS3 (TailwindCSS), Vanilla JavaScript (ES6 Modules)
-	•	Protocol: MQTT over WSS (HiveMQ Cloud)
-	•	Device Communication: ESP-IDF firmware over MQTT
-	•	OTA Transport: HTTPS (secure SSL validation)
-	•	Storage: NVS Flash (for Wi-Fi credentials)
-	•	Hosting: GitHub Pages (static web app)
+- Frontend: HTML5, CSS3 (TailwindCSS), Vanilla JavaScript (ES6 Modules)
+- Protocol: MQTT over WSS (HiveMQ Cloud)
+- Device Communication: ESP-IDF firmware over MQTT
+- OTA Transport: HTTPS (secure SSL validation)
+- Storage: NVS Flash (for Wi-Fi credentials)
+- Hosting: GitHub Pages (static web app)
 
 ---
 
 ### 📱 Responsiveness
 
 The app adapts to all screen sizes:
-	•	✅ Mobile-friendly (touch-optimized)
-	•	✅ Tablet-ready layout
-	•	✅ Desktop widescreen support
+- ✅ Mobile-friendly (touch-optimized)
+- ✅ Tablet-ready layout
+- ✅ Desktop widescreen support
 
 📸 Example Screenshot Placeholder (Mobile view)
 📸 Example Screenshot Placeholder (Desktop view)
@@ -239,11 +245,11 @@ The app adapts to all screen sizes:
 ---
 
 ### 🚀 Future Work
-	•	Adding real IoT functionalities (sensors, relays, or automation logic)
-	•	Real-time graphs of sensor data
-	•	User authentication & dashboard cloud accounts
-	•	Local gateway mode (Wi-Fi direct control)
-	•	Improved OTA management with release versioning
+- Adding real IoT functionalities (sensors, relays, or automation logic)
+- Real-time graphs of sensor data
+- User authentication & dashboard cloud accounts
+- Local gateway mode (Wi-Fi direct control)
+- Improved OTA management with release versioning
 
 ---
 
