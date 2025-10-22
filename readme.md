@@ -113,7 +113,7 @@ Displayed Info:
 - MAC address
 - RSSI (signal strength)
 
-📸 Example ![Main screen before connection established](images/Main-screen-not-connected.PNG)
+📸 Example !<img src="![alt text](images/Main-screen-not-connected.PNG)" alt="Wi-Fi Scan Example" width="250"/>
 
 ⸻
 
