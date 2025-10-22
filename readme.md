@@ -84,7 +84,7 @@ Below is a detailed breakdown of each page, its functionality, and user interact
 
 
 
-🏡 1. Home Page
+#### 🏡 1. Home Page
 
 Purpose:
 
@@ -115,7 +115,7 @@ Displayed Info:
 
 ⸻
 
-💡 2. LEDs Control Page
+#### 💡 2. LEDs Control Page
 
 Purpose:
 
@@ -137,7 +137,7 @@ The device updates the corresponding GPIO state and sends a confirmation message
 
 ---
 
-### 🖥️ 3. LCD Display Page
+#### 🖥️ 3. LCD Display Page
 
 Purpose:
 
@@ -153,7 +153,7 @@ The ESP32 receives it and updates the LCD instantly.
 
 ⸻
 
-### 📶 4. Wi-Fi Management Page
+#### 📶 4. Wi-Fi Management Page
 
 Purpose:
 
@@ -180,7 +180,7 @@ If the password is incorrect or the connection fails:
 
 ⸻
 
-### 🔄 5. OTA Update Page
+#### 🔄 5. OTA Update Page
 
 Purpose:
 
@@ -207,3 +207,48 @@ During the update:
 - Once complete, the ESP32 reboots, reconnects to MQTT, and reports the new firmware version on the Home page.
 
 📸 Example Screenshot Placeholder (OTA in Progress)
+
+| **Direction** | **Transport** | **Description** |
+|----------------|---------------|-----------------|
+| Dashboard → ESP32 | MQTT publish | Sends commands (toggle LED, start OTA, display LCD text, etc.) |
+| ESP32 → Dashboard | MQTT publish | Sends acknowledgments, status, scan results, progress updates |
+| ESP32 → Cloud | HTTPS | Fetches firmware for OTA updates |
+| ESP32 ↔ Wi-Fi | Internal | Connects, scans, stores credentials in NVS Flash |
+
+
+### 🛠️ Tech Stack
+	•	Frontend: HTML5, CSS3 (TailwindCSS), Vanilla JavaScript (ES6 Modules)
+	•	Protocol: MQTT over WSS (HiveMQ Cloud)
+	•	Device Communication: ESP-IDF firmware over MQTT
+	•	OTA Transport: HTTPS (secure SSL validation)
+	•	Storage: NVS Flash (for Wi-Fi credentials)
+	•	Hosting: GitHub Pages (static web app)
+
+---
+
+### 📱 Responsiveness
+
+The app adapts to all screen sizes:
+	•	✅ Mobile-friendly (touch-optimized)
+	•	✅ Tablet-ready layout
+	•	✅ Desktop widescreen support
+
+📸 Example Screenshot Placeholder (Mobile view)
+📸 Example Screenshot Placeholder (Desktop view)
+
+---
+
+### 🚀 Future Work
+	•	Adding real IoT functionalities (sensors, relays, or automation logic)
+	•	Real-time graphs of sensor data
+	•	User authentication & dashboard cloud accounts
+	•	Local gateway mode (Wi-Fi direct control)
+	•	Improved OTA management with release versioning
+
+---
+
+### 👤 Author
+
+Ivgeny Tokarzhevsky
+Full-stack IoT developer, hardware designer, and embedded software engineer.
+This dashboard and firmware are both custom-built from scratch.
