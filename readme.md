@@ -113,7 +113,7 @@ Displayed Info:
 - MAC address
 - RSSI (signal strength)
 
-<img src="images/Main-screen-not-connected.PNG" alt="Wi-Fi Scan Example" width="250"/>
+<img src="images/Main-screen-not-connected.PNG" alt="Wi-Fi Scan Example" width="350"/>
 
 ⸻
 
