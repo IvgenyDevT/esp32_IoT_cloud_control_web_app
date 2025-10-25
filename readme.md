@@ -125,7 +125,6 @@ Displayed Info:
 <br><br>
 
 **📸 Example - after MQTT connected, the app is trying to establish connection with the IoT device-**
-
 <img src="images/main_connecting.PNG" alt="hdevice connecting" width="350"/>
 
 <br><br>
