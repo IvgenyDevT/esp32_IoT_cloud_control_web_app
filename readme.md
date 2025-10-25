@@ -115,23 +115,24 @@ Displayed Info:
 
 
 **📸 Example - main menu -**
+<br><br>
 <img src="images/menu_show.PNG" alt="menu" width="350"/>
-
 <br><br>
 
 **📸 Example - Home page before connection -**
+<br><br>
 <img src="images/Main-screen-not-connected.PNG" alt="home screen - no connection" width="350"/>
-
 <br><br>
 
 **📸 Example - after MQTT connected, the app is trying to establish connection with the IoT device-**
+<br><br>
 <img src="images/main_connecting.PNG" alt="hdevice connecting" width="350"/>
-
 <br><br>
 
 **📸 Example - connection established between the app and the IoT device-**
+<br><br>
 <img src="images/main_connected.PNG" alt="device connected" width="350"/>
-
+<br><br>
 ⸻
 
 #### 💡 2. LEDs Control Page
