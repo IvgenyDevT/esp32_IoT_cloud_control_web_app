@@ -1,9 +1,12 @@
-## 🌐 ESP32 IoT Cloud Control Dashboard
+# 🌐 ESP32 IoT Cloud Control Dashboard
 
-### 🧠 Overview
+## 🧠 Overview
 
 This project is a web-based control dashboard developed to manage and communicate with a custom-designed IoT gateway board, based on the ESP32-S2-U1-Mini chip.
 The board itself was fully designed and programmed by me, and this dashboard serves as its main control and monitoring interface.
+
+🔗 See the IoT device firmware project repository here:
+ESP32 IoT Cloud Device Firmware
 
 The dashboard is written in JavaScript, HTML, and CSS, with styling powered by TailwindCSS.
 It is fully responsive — optimized for mobile devices as well as desktop browsers.
@@ -12,13 +15,11 @@ It is fully responsive — optimized for mobile devices as well as desktop brows
 ---
 
 
-### ⚙️ Project Purpose
+## ⚙️ Project Purpose
 
 This web app acts as the primary interface between the user and the IoT device — a custom ESP32-S2 gateway that connects to the cloud via MQTT.
 The system enables remote device management, firmware updates (OTA), Wi-Fi configuration, and direct hardware control — such as LCD display output and LED toggling.
 
-🔗 See the IoT device firmware repository here:
-ESP32 IoT Cloud Device Firmware
 
 At this stage, the device doesn’t perform a specific sensor or actuator function (such as temperature measurement or motion detection).
 Instead, it provides core infrastructure functions that are essential for any smart device:
@@ -30,12 +31,13 @@ Instead, it provides core infrastructure functions that are essential for any sm
 - **Over-the-air firmware updates (OTA)**
 - **Hardware interaction (LCD, LEDs)**
 - **Multi-network memory management**
+  
 
 Future functionality (e.g., sensors, automation logic) can easily be added on top of this system.
 
 ---
 
-### 🧩 System Architecture
+## 🧩 System Architecture
 
 ```markdown
 User (Web Dashboard)
@@ -52,6 +54,14 @@ ESP32-S2 Custom IoT Gateway
 
 ```
 
+**flow**
+| **Direction** | **Transport** | **Description** |
+|----------------|---------------|-----------------|
+| Dashboard → ESP32 | MQTT publish | Sends commands (toggle LED, start OTA, display LCD text, etc.) |
+| ESP32 → Dashboard | MQTT publish | Sends acknowledgments, status, scan results, progress updates |
+| ESP32 → Cloud | HTTPS | Fetches firmware for OTA updates |
+| ESP32 ↔ Wi-Fi | Internal | Connects, scans, stores credentials in NVS Flash |
+
 
 The web dashboard communicates with the device via MQTT topics:
 - Each button click on the dashboard publishes a message to a predefined topic.
@@ -59,9 +69,12 @@ The web dashboard communicates with the device via MQTT topics:
 - The ESP32 then publishes an acknowledgment or status update to a response topic.
 - The dashboard listens and updates the UI accordingly.
 
-⸻
+---
 
-### 🧠 Core Functionality Overview
+
+
+## 🧠 Core Functionality Overview
+
 
 | **Feature** | **Description** |
 |--------------|----------------|
@@ -77,65 +90,75 @@ The web dashboard communicates with the device via MQTT topics:
 
 ---
 
-### 🏠 Dashboard Pages & Controls
+
+
+## 🏠 Dashboard Pages & Controls
 
 Below is a detailed breakdown of each page, its functionality, and user interaction flow.
 
 
 
-#### 🏡 1. Home Page
+### 🏡 1. Home Page
 
 Purpose:
 
 Main overview of the system’s state and connection.
 
 Controls:
-- Connect MQTT
+- **Connect MQTT**
 Establishes a connection between the web dashboard and the cloud MQTT broker.
 The client performs a secure WSS handshake, initializes subscriptions, and waits for incoming messages.
 
-- Check Device Connection
+- **Check Device Connection**
 Manually triggers a status check with the IoT device via MQTT.
 The ESP32 replies with info like device name, firmware version, SSID, IP, MAC, and RSSI.
 
-⚙️ Automatic Behavior:
+⚙️ **Automatic Behavior**:
 - When the device powers on and connects to MQTT, its status automatically turns Online.
 
 - When it goes offline, the dashboard instantly switches to Offline.
 
 - The manual check button remains available to verify connectivity or refresh live metrics (like RSSI) without restarting.
 
-Displayed Info:
+**Displayed Info**:
+
 - Device name
 - Firmware version
 - Wi-Fi SSID
 - IP address
 - MAC address
 - RSSI (signal strength)
-
+<br><br>
 
 **📸 Example - main menu -**
 <br><br>
 <img src="images/menu_show.PNG" alt="menu" width="350"/>
+<br><br>
 <br><br>
 
 **📸 Example - Home page before connection -**
 <br><br>
 <img src="images/Main-screen-not-connected.PNG" alt="home screen - no connection" width="350"/>
 <br><br>
+<br><br>
 
 **📸 Example - after MQTT connected, the app is trying to establish connection with the IoT device-**
 <br><br>
 <img src="images/main_connecting.PNG" alt="hdevice connecting" width="350"/>
+<br><br>
 <br><br>
 
 **📸 Example - connection established between the app and the IoT device-**
 <br><br>
 <img src="images/main_connected.PNG" alt="device connected" width="350"/>
 <br><br>
+<br><br>
+
+
 ---
 
-#### 💡 2. LEDs Control Page
+
+### 💡 2. LEDs Control Page
 
 Purpose:
 
@@ -155,7 +178,7 @@ leds_toggle: "red led on"
 ```
 
 The device updates the corresponding GPIO state and sends a confirmation message back.
-
+<br><br>
 **📸 Example - LEDs toggle page**
 <br><br>
 <img src="images/LEDS.PNG" alt="LEDs page" width="350"/>
@@ -163,7 +186,7 @@ The device updates the corresponding GPIO state and sends a confirmation message
 
 ---
 
-#### 🖥️ 3. LCD Display Page
+### 🖥️ 3. LCD Display Page
 
 Purpose:
 
@@ -175,7 +198,7 @@ Controls:
 - Display on LCD button — publishes an MQTT message with the text.
 
 The ESP32 receives it and updates the LCD instantly.
-
+<br><br>
 **📸 Example - LCD control page**
 <br><br>
 <img src="images/LCD.PNG" alt="LCD page" width="350"/>
@@ -183,7 +206,7 @@ The ESP32 receives it and updates the LCD instantly.
 
 ---
 
-#### 📶 4. Wi-Fi Management Page
+### 📶 4. Wi-Fi Management Page
 
 Purpose:
 
@@ -195,7 +218,6 @@ Triggers a scan request via MQTT → The ESP32 scans nearby networks → The das
 - Connect button next to each network:
 - If the network is saved in memory, it connects automatically.
 - If it’s a new network, a modal popup appears for entering the password.
-📸 Example Screenshot Placeholder (Wi-Fi Password Modal)
 
 After successful connection:
 - The new SSID is saved to NVS Flash, meaning the device will remember it and automatically reconnect after reboot.
@@ -206,48 +228,57 @@ If the password is incorrect or the connection fails:
 - The device reconnects to the previous network.
 - The invalid credentials are not saved.
 
-**After pressing the scan button, the Wi-Fi scanning proccess is starting**
 
-**📸 Example - Wi-Fi main page scanning**
+**📸 Example - After pressing the scan button, the Wi-Fi scanning proccess is starting**
+
 <br><br>
 <img src="images/scan-page.PNG" alt="wifi_main_page" width="350"/>
 <br><br>
+<br><br>
 
 
-**after Wi-Fi scan, the list with scanned Wi-Fi nets will be displayed**
 
-**📸 Example - scanned available Wi-Fi list**
+**📸 Example - after Wi-Fi scan, the list with scanned Wi-Fi nets will be displayed**
+
 <br><br>
 <img src="images/scan-list.PNG" alt="wifi_scanned_list" width="350"/>
 <br><br>
+<br><br>
 
-**while trying to connect to a new Wi-Fi for the first time, password and ssid are required**
 
-**📸 Example - new Wi-Fi connection screen**
+**📸 Example - while trying to connect to a new Wi-Fi for the first time, password and ssid are required**
+
 <br><br>
 <img src="images/connect-new-wifi.jpg" alt="new_wifi_connect_screen" width="350"/>
 <br><br>
+<br><br>
 
-**after inserting password and ssid and pressing the connect button, the connection process will start**
 
-**📸 Example - connecting to new Wi-Fi**
+
+**📸 Example - after inserting password and ssid and pressing the connect button, the connection process will start**
+
 <br><br>
 <img src="images/new-wifi-connecting.PNG" alt="new_wifi_connecting" width="350"/>
 <br><br>
+<br><br>
 
 
-**if there is an error, a message with the relevant error should be displayed**
 
-**📸 Example - wrong password**
+**📸 Example - if there is an error, a message with the relevant error should be displayed**
+
+
 <br><br>
 <img src="images/wrong-pass.PNG" alt="wrong_pass" width="350"/>
 <br><br>
+<br><br>
 
-**if we try to connect to a Wi-Fi that already connected in the past, the connection proccess will start without requiring password and ssid**
 
-**📸 Example - connecting to saved Wi-Fi net**
+
+**📸 Example - if we try to connect to a Wi-Fi that already connected in the past, the connection proccess will start without requiring password and ssid**
+
 <br><br>
 <img src="images/connecting-saved-wifi.PNG" alt="connecting_to_saved_wifi" width="350"/>
+<br><br>
 <br><br>
 
 
@@ -255,18 +286,21 @@ If the password is incorrect or the connection fails:
 <br><br>
 <img src="images/saved-wifi-connected.PNG" alt="saved_wifi_connected" width="350"/>
 <br><br>
-⸻
+<br><br>
 
-#### 🔄 5. OTA Update Page
+
+---
+
+### 🔄 5. OTA Update Page
 
 Purpose:
 
 Perform secure over-the-air (OTA) firmware updates remotely.
 
 How it works:
-	1.	Place a compiled .bin firmware file in the /firmware/ directory of your GitHub-hosted files.
-	2.	Select it from the dropdown list in the dashboard.
-	3.	Click Start OTA.
+- 1.	Place a compiled .bin firmware file in the /firmware/ directory of your GitHub-hosted files.
+- 2.	Select it from the dropdown list in the dashboard.
+- 3.	Click Start OTA.
 
 The dashboard sends an MQTT command with the firmware URL.
 The ESP32 performs an HTTPS request, validates the SSL certificate, downloads the binary, and writes it to flash memory.
@@ -289,44 +323,43 @@ During the update:
 <br><br>
 <img src="images/OTA_main_screen.PNG" alt="OTA_main_page" width="350"/>
 <br><br>
+<br><br>
 
-**choose the version to install from the available .bin files list**
 
-**📸 Example - OTA firmware .bin files list**
+
+**📸 Example - choose the version to install from the available .bin files list**
 <br><br>
 <img src="images/ota_lisst.PNG" alt="ota_lisst" width="350"/>
 <br><br>
+<br><br>
 
-**after chossing the required version, press OTA start button and the new version downloading and installing proccess will start**
 
-**📸 Example - OTA update installing**
+
+**📸 Example - after chossing the required version, press OTA start button and the new version downloading and installing proccess will start**
 <br><br>
 <img src="images/OTA_installing.PNG" alt="ota installing" width="350"/>
 <br><br>
+<br><br>
 
-**after installation proccess done, the IoT device will reboot with the new installed version**
 
-**📸 Example - OTA update installed successfully**
+
+**📸 Example - after installation proccess done, the IoT device will reboot with the new installed version**
 <br><br>
 <img src="images/OTA_update_done.PNG" alt="ota done" width="350"/>
 <br><br>
+<br><br>
 
-**now we can return to main page and see that the new version 6.0 installed**
 
-**📸 Example - home page with new version**
+
+**📸 Example - now we can return to main page and see that the new version 6.0 installed**
 <br><br>
 <img src="images/new_connection_after_update.PNG" alt="home_page_ota_installed" width="350"/>
 <br><br>
+<br><br>
 
-| **Direction** | **Transport** | **Description** |
-|----------------|---------------|-----------------|
-| Dashboard → ESP32 | MQTT publish | Sends commands (toggle LED, start OTA, display LCD text, etc.) |
-| ESP32 → Dashboard | MQTT publish | Sends acknowledgments, status, scan results, progress updates |
-| ESP32 → Cloud | HTTPS | Fetches firmware for OTA updates |
-| ESP32 ↔ Wi-Fi | Internal | Connects, scans, stores credentials in NVS Flash |
+---
 
-
-### 🛠️ Tech Stack
+## 🛠️ Tech Stack
 - Frontend: HTML5, CSS3 (TailwindCSS), Vanilla JavaScript (ES6 Modules)
 - Protocol: MQTT over WSS (HiveMQ Cloud)
 - Device Communication: ESP-IDF firmware over MQTT
@@ -336,19 +369,17 @@ During the update:
 
 ---
 
-### 📱 Responsiveness
+## 📱 Responsiveness
 
 The app adapts to all screen sizes:
 - ✅ Mobile-friendly (touch-optimized)
 - ✅ Tablet-ready layout
 - ✅ Desktop widescreen support
 
-📸 Example Screenshot Placeholder (Mobile view)
-📸 Example Screenshot Placeholder (Desktop view)
 
 ---
 
-### 🚀 Future Work
+## 🚀 Future Work
 - Adding real IoT functionalities (sensors, relays, or automation logic)
 - Real-time graphs of sensor data
 - User authentication & dashboard cloud accounts
@@ -357,7 +388,7 @@ The app adapts to all screen sizes:
 
 ---
 
-### 👤 Author
+## 👤 Author
 
 Ivgeny Tokarzhevsky
 Full-stack IoT developer, hardware designer, and embedded software engineer.
