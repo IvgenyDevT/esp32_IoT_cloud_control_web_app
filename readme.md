@@ -133,7 +133,7 @@ Displayed Info:
 <br><br>
 <img src="images/main_connected.PNG" alt="device connected" width="350"/>
 <br><br>
-⸻
+---
 
 #### 💡 2. LEDs Control Page
 
@@ -156,7 +156,10 @@ leds_toggle: "red led on"
 
 The device updates the corresponding GPIO state and sends a confirmation message back.
 
-📸 Example Screenshot Placeholder
+**📸 Example - LEDs toggle page**
+<br><br>
+<img src="images/LEDS.PNG" alt="LEDs page" width="350"/>
+<br><br>
 
 ---
 
@@ -173,9 +176,12 @@ Controls:
 
 The ESP32 receives it and updates the LCD instantly.
 
-📸 Example Screenshot Placeholder
+**📸 Example - LCD control page**
+<br><br>
+<img src="images/LCD.PNG" alt="LCD page" width="350"/>
+<br><br>
 
-⸻
+---
 
 #### 📶 4. Wi-Fi Management Page
 
@@ -200,8 +206,55 @@ If the password is incorrect or the connection fails:
 - The device reconnects to the previous network.
 - The invalid credentials are not saved.
 
-📸 Example Screenshot Placeholder (Wi-Fi Networks List)
+**After pressing the scan button, the Wi-Fi scanning proccess is starting**
 
+**📸 Example - Wi-Fi main page scanning**
+<br><br>
+<img src="images/scan-page.PNG" alt="wifi_main_page" width="350"/>
+<br><br>
+
+
+**after Wi-Fi scan, the list with scanned Wi-Fi nets will be displayed**
+
+**📸 Example - scanned available Wi-Fi list**
+<br><br>
+<img src="images/scan-list.PNG" alt="wifi_scanned_list" width="350"/>
+<br><br>
+
+**while trying to connect to a new Wi-Fi for the first time, password and ssid are required**
+
+**📸 Example - new Wi-Fi connection screen**
+<br><br>
+<img src="images/connect-new-wifi.jpg" alt="new_wifi_connect_screen" width="350"/>
+<br><br>
+
+**after inserting password and ssid and pressing the connect button, the connection process will start**
+
+**📸 Example - connecting to new Wi-Fi**
+<br><br>
+<img src="images/new-wifi-connecting.PNG" alt="new_wifi_connecting" width="350"/>
+<br><br>
+
+
+**if there is an error, a message with the relevant error should be displayed**
+
+**📸 Example - wrong password**
+<br><br>
+<img src="images/wrong-pass.PNG" alt="wrong_pass" width="350"/>
+<br><br>
+
+**if we try to connect to a Wi-Fi that already connected in the past, the connection proccess will start without requiring password and ssid**
+
+**📸 Example - connecting to saved Wi-Fi net**
+<br><br>
+<img src="images/connecting-saved-wifi.PNG" alt="connecting_to_saved_wifi" width="350"/>
+<br><br>
+
+
+**📸 Example - Wi-Fi connected successfully**
+<br><br>
+<img src="images/saved-wifi-connected.PNG" alt="saved_wifi_connected" width="350"/>
+<br><br>
 ⸻
 
 #### 🔄 5. OTA Update Page
@@ -230,7 +283,40 @@ During the update:
 ```
 - Once complete, the ESP32 reboots, reconnects to MQTT, and reports the new firmware version on the Home page.
 
-📸 Example Screenshot Placeholder (OTA in Progress)
+
+
+**📸 Example - OTA update page**
+<br><br>
+<img src="images/OTA_main_screen.PNG" alt="OTA_main_page" width="350"/>
+<br><br>
+
+**choose the version to install from the available .bin files list**
+
+**📸 Example - OTA firmware .bin files list**
+<br><br>
+<img src="images/ota_lisst.PNG" alt="ota_lisst" width="350"/>
+<br><br>
+
+**after chossing the required version, press OTA start button and the new version downloading and installing proccess will start**
+
+**📸 Example - OTA update installing**
+<br><br>
+<img src="images/OTA_installing.PNG" alt="ota installing" width="350"/>
+<br><br>
+
+**after installation proccess done, the IoT device will reboot with the new installed version**
+
+**📸 Example - OTA update installed successfully**
+<br><br>
+<img src="images/OTA_update_done.PNG" alt="ota done" width="350"/>
+<br><br>
+
+**now we can return to main page and see that the new version 6.0 installed**
+
+**📸 Example - home page with new version**
+<br><br>
+<img src="images/new_connection_after_update.PNG" alt="home_page_ota_installed" width="350"/>
+<br><br>
 
 | **Direction** | **Transport** | **Description** |
 |----------------|---------------|-----------------|
