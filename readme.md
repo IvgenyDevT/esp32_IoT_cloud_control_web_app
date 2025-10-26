@@ -6,7 +6,9 @@ This project is a web-based control dashboard developed to manage and communicat
 The board itself was fully designed and programmed by me, and this dashboard serves as its main control and monitoring interface.
 
 🔗 See the IoT device firmware project repository here:
-ESP32 IoT Cloud Device Firmware
+```
+https://github.com/IvgenyDevT/esp32_IoT_cloud_device_firmware.git
+```
 
 The dashboard is written in JavaScript, HTML, and CSS, with styling powered by TailwindCSS.
 It is fully responsive — optimized for mobile devices as well as desktop browsers.
@@ -100,11 +102,11 @@ Below is a detailed breakdown of each page, its functionality, and user interact
 
 ### 🏡 1. Home Page
 
-Purpose:
+**Purpose:**
 
 Main overview of the system’s state and connection.
 
-Controls:
+**Controls:**
 - **Connect MQTT**
 Establishes a connection between the web dashboard and the cloud MQTT broker.
 The client performs a secure WSS handshake, initializes subscriptions, and waits for incoming messages.
